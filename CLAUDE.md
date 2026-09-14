@@ -32,7 +32,7 @@ HARMONY Terlipressin **Liver Transplant** sub-project — 1-year extended follow
 
 Tables use the shared pipeline's `create_table_one()` (table1 HTML + tableone CSV in `docs/tables/`).
 
-## Data Caveats
+## Data Caveats (details and cross-project status in `docs/bugs.qmd`)
 
 - `map_terli_day0_time0..3` contain `0` placeholders; `map_day0_avg` recodes `0` → `NA` before averaging.
 - The shared pipeline's `mean_map_day0` collides with a same-named column in the master xlsx and comes out as `mean_map_day0.x` / `.y` — do not reference it; use `map_day0_avg`.
@@ -46,10 +46,11 @@ Tables use the shared pipeline's `create_table_one()` (table1 HTML + tableone CS
 | `docs/analysis.qmd` | Canonical analysis — sources the shared pipeline |
 | `docs/index.qmd` | Project summary page |
 | `docs/efu_variables.qmd` | EFU data dictionary page |
+| `docs/bugs.qmd` | Bug tracker (S = shared pipeline, L = legacy scripts, D = EFU data) with cross-project status — update it when a bug is fixed upstream |
 | `docs/_quarto.yml` | Site config |
 | `docs/{redcap,derived}_variables.qmd` | Symlinks to the main project's variable dictionaries |
 | `docs/tables/` | CSV table outputs |
-| `Code/*.Rmd` | Legacy analyst scripts (Sep–Nov 2025) — superseded; the errors found in them are listed at the top of `docs/analysis.qmd` |
+| `Code/*.Rmd` | Legacy analyst scripts (Sep–Nov 2025) — superseded; their bugs are listed in `docs/bugs.qmd` |
 | `Requests/*.docx` | Original analysis request documents |
 | `Results/` | Legacy outputs |
 

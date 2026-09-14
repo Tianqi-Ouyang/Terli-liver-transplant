@@ -18,6 +18,8 @@ website:
         text: EFU Variables
       - href: analysis.qmd
         text: Analysis
+      - href: bugs.qmd
+        text: Bug Tracker
 
 format:
   html:

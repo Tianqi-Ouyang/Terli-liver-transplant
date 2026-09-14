@@ -1,0 +1,52 @@
+---
+title: "Bug Tracker"
+author: "Tianqi Ouyang"
+date: last-modified
+page-layout: full
+---
+
+Every bug found while building this sub-project, with its status across the
+HARMONY sub-projects as of **2026-09-14**. "Fixed here" means the fix lives in
+this project's [`docs/analysis.qmd`](analysis.qmd); nothing has been changed
+in the shared pipeline or in other projects.
+
+::: {.callout-important}
+## Shared-pipeline bugs are still open upstream
+
+Bugs **S1–S3** are in `Terlipressin/code/shared_pipeline.qmd` (or in the
+master xlsx it loads). I checked every sub-project on 2026-09-14 — none of
+them has fixed S1 or S2; only Xing and this project handle S3. Until the
+shared pipeline is patched, each sub-project needs the local workaround
+shown in the *Handling here* column.
+:::
+
+## S — Shared pipeline / master data
+
+| ID | Where | Bug | Impact | Other projects (checked 2026-09-14) | Handling here |
+|:--|:--|:--|:--|:--|:--|
+| **S1** | `create_table_one()` → `pvalue()`; introduced in *Adverse event* `docs/results.qmd` commit `71a88fb` (2026-04-13), copied into the shared pipeline 2026-04-14 | `table1::table1(..., overall = "Overall", extra.col = list("P-value" = pvalue))` passes the **Overall** column into `pvalue()` as an extra stratum (element named `overall`, table1 1.4.3) | Every **HTML** p-value is computed on (group A, group B, Overall): inflated p-values, and Kruskal-Wallis instead of Mann-Whitney for 2-group continuous variables. The tableone **CSV** written by the same call is correct. Example: this project `sex_male` 0.239 vs 0.121; AlcHep `scr_admit` 0.431 (site) vs 0.195 (CSV) | **Not fixed anywhere.** Affected (HTML p-values wrong on the published site): *Adverse event* (own copy, 9 tables, newest version 2026-07-23 still has it), *AlcHep* (2 tables), *Xing* (1 table), *Other Vasoconstrictors* (1 table, site not rendered). Not affected: *Cardio* (overrides with a tableone-only CSV + kable version), main *Terlipressin* `Tables.Rmd` / `docs/data_summary.qmd` (tableone only) | `pvalue()` redefined in the setup chunk to drop the `overall` element, then `assign()`ed into the global env (knitr chunks run in a child env, so a plain redefinition is not seen by `create_table_one`). HTML now matches CSV |
+| **S2** | `mean-map` + `derived-variables` chunks | The master xlsx already contains `mean_map_day0` (written by `Tables.Rmd`); the pipeline merges a second copy → `mean_map_day0.x` / `mean_map_day0.y`, no plain `mean_map_day0`, although `CLAUDE.md` lists it as provided | Any `all_vars` entry `mean_map_day0` / `map_day0` is silently removed by `intersect(all_vars, names(data))` | **Not fixed anywhere.** *Xing* Table 1 lists `"map_day0"` → the row is missing from its published table and CSV (confirmed: no MAP row in `table1_death_status_90days_init.csv`). Other projects do not reference the variable | `map_day0_avg` computed explicitly from the four `map_terli_day0_time*` fields |
+| **S3** | Master data `map_terli_day0_time0..3` (and therefore both copies of `mean_map_day0`) | `0` is used as a "not measured" placeholder (25 / 4 / 2 / 2 readings); `Tables.Rmd` and the pipeline average it as a real pressure | Day-0 MAP mean biased downward for ~30 patients | *Xing* recodes `0 → NA` and takes the median (`map_terli_day0`). Not handled in the main project, Cardio, AlcHep, Adverse event, Other Vasoconstrictors | `0 → NA` before averaging |
+| **S4** | REDCap export column `map_terli_time1_day1` | Mis-named field (should be `map_terli_day1_time1`), so `starts_with("map_terli_day")` in the pipeline never sees it | Day-1 MAP mean uses 3 readings instead of 4 (does not affect day 0) | Not handled anywhere | Not used in this project; noted |
+| **S5** | `Terlipressin` git repo | The `create_table_one` section of `shared_pipeline.qmd` and the matching `CLAUDE.md` edits are **uncommitted** (working copy 2026-04-14; last commit `d2d94f5` 2026-04-13 does not contain them). Upstream `origin/main` has nothing newer | A fresh clone would not have `create_table_one()`; the "most updated" pipeline exists only on this machine | — | This project sources the local working copy (the most updated version) |
+
+## L — Legacy scripts in `Code/*.Rmd` (this project)
+
+| ID | File | Bug | Impact | Handling here |
+|:--|:--|:--|:--|:--|
+| **L1** | `liver-transplant-0922.Rmd` | `rrt_90days = ifelse(is.na(days_to_rrt) & days_to_rrt <= 90, 1, 0)` — `is.na(x) & x <= 90` can never be `TRUE`; `lt_90days` has the same bug and also compares `days_to_rrt` instead of `days_to_lt` | `rrt_90days` / `lt_90days` were never 1 | Corrected in the later `liver request 11122025.Rmd`; not needed here (EFU has its own RRT / LT fields) |
+| **L2** | `liver-transplant-0922.Rmd` | `albvolume_before_terli` in `num_vars` but not in `all_vars` | Silently dropped from every Table 1 | Included |
+| **L3** | `liver-transplant-0922.Rmd` | "Table 4" chunk is an exact duplicate of "Table 3" (same strata, same output path) | Same CSV written twice | Removed |
+| **L4** | `liver request 11122025.Rmd` | `mutate(ifelse(is.na(refascites_previous_comp), 0, refascites_previous_comp))` has no `name =` | Creates a column literally named `ifelse(...)`; the intended NA → 0 recode never reached the logistic model | Not applicable (no recode requested); flagged |
+| **L5** | both `.Rmd` | `alb_terli_discont_day` built from `alb_terli_dayN` = **serum albumin (g/dL)**, but the request asked for albumin **given** | "Albumin during therapy" in the old Table 1 was a lab value, not a dose | `albumintotal_terli_dayN` (grams given per day) summed over treatment days = shared `total_albumin` (verified: nothing recorded after `Discont_Day`) |
+| **L6** | both `.Rmd` | Read the superseded `/Users/to909/Desktop/Terlipressin/final_master_0508.xlsx` | Predates the cleaned master | Shared pipeline → `final_master_01282026.xlsx` |
+
+## D — EFU site data (`Finalized Files/09SEP2026/`)
+
+| ID | Site / field | Bug | Impact | Handling here |
+|:--|:--|:--|:--|:--|
+| **D1** | Yale | IDs are `YAL-00N` in the EFU file but `Yale-N` in the master (different prefix *and* zero-padding) | All 5 Yale patients failed a plain `subjectid` join | Join on a normalized key: upper-case prefix (`YAL` → `YALE`) + integer number |
+| **D2** | CCF | Site file has 41 rows; master has 40 CCF patients. The extra ID is a "gap" number inside the master's CCF range — a REDCap subject not in the locked master | 222 EFU rows → **221** analyzable patients | Reported in the join QC; cohort n is computed, not hard-coded. Ask CCF whether this subject should exist in the master |
+| **D3** | CSF | No CSF file was submitted | The 22 CSF master patients have no EFU data | Reported in the join QC |
+| **D4** | `efu_lttbili` | One value is a below-detection string (`<x.x`) | `as.numeric()` → `NA` | `readr::parse_number()` keeps the limit value |
+| **D5** | `efu_listingstatus` | One patient has a missing value | Tables 1 and 3 use n = 220; Table 2 uses n = 221 | Stated in each table's caption |

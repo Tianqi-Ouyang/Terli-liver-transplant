@@ -25,27 +25,21 @@ site-submitted files under
 | 2 — EFU summary | EFU patients | `listed_transplant` (index-hospitalization listing, shared pipeline) | All EFU outcome fields |
 | 3 — EFU summary | EFU patients | `efu_listingstatus` | All EFU outcome fields except the stratifier |
 
-# Legacy Code Review — Errors Found
+# Bugs Found (summary)
 
-The previous analyses in `Code/*.Rmd` were reviewed before this file was
-written. The following problems were found; none of them are carried
-forward here.
+The legacy `Code/*.Rmd` scripts, the shared pipeline and the EFU site files
+were reviewed before this analysis was written. All findings, with their
+status in the other HARMONY sub-projects, are listed on the
+[**Bug Tracker**](bugs.qmd) page. The ones that change how this file works:
 
-| # | File | Error | Consequence | Handling here |
-|:--|:--|:--|:--|:--|
-| 1 | `liver-transplant-0922.Rmd` | `rrt_90days = ifelse(is.na(days_to_rrt) & days_to_rrt <= 90, 1, 0)` — `is.na(x) & x <= 90` can never be `TRUE` | `rrt_90days` was never 1. Same bug in `lt_90days`, which additionally compared `days_to_rrt` instead of `days_to_lt` | Fixed in the later `liver request 11122025.Rmd`; not needed here (EFU has its own RRT / LT fields) |
-| 2 | `liver-transplant-0922.Rmd` | `albvolume_before_terli` listed in `num_vars` but not in `all_vars` | Silently dropped from every Table 1 | Included in `all_vars` |
-| 3 | `liver-transplant-0922.Rmd` | "Table 4" chunk is an exact duplicate of "Table 3" (same strata, same output path) | Same CSV written twice | Removed |
-| 4 | `liver request 11122025.Rmd` | `mutate(ifelse(is.na(refascites_previous_comp), 0, refascites_previous_comp))` has no `name =` | Creates a column literally named `ifelse(...)`; the intended NA → 0 recode never reached `refascites_previous_comp`, so the logistic model silently dropped those rows | Not applicable here (no recode requested); flagged |
-| 5 | both `.Rmd` | `alb_terli_discont_day` was built from the `alb_terli_dayN` fields, which are **serum albumin (g/dL)**, not albumin *given* | The "albumin during therapy" row in the old Table 1 was a lab value, not a dose | Albumin given is `albumintotal_terli_dayN` (grams/day); the shared pipeline sums days 0–13 into `total_albumin`, used here for the requested `albumintotal_terli_dayX` row. No albumin is recorded after `Discont_Day`, so the sum equals "total albumin during therapy" |
-| 6 | both `.Rmd` | Read the superseded `/Users/to909/Desktop/Terlipressin/final_master_0508.xlsx` | Predates the cleaned master | Shared pipeline → `final_master_01282026.xlsx` |
-| 7 | shared pipeline | The master xlsx already contains `mean_map_day0`; the pipeline merges a second copy, producing `mean_map_day0.x` / `.y` (no `mean_map_day0` column) | Any sub-project referencing `mean_map_day0` / `map_day0` silently loses that row from its Table 1 | `map_day0_avg` is computed explicitly in this file |
-| 8 | master data | `map_terli_day0_time0..3` contain `0` values (25 / 4 / 2 / 2 readings) — placeholders for "not measured", not real pressures | Averaging them in biases the day-0 MAP downward | `0` → `NA` before averaging (same convention as the Xing sub-project) |
-| 9 | EFU data | Yale IDs are `YAL-00N` in the EFU file but `Yale-N` in the master | All 5 Yale patients failed to join | Join on a normalized key: upper-case prefix (`YAL` → `YALE`) + integer number |
-| 10 | EFU data | One CCF row (site file has 41 rows; master has 40 CCF patients) has an ID that is not in the master at all | 222 EFU rows → **221** analyzable patients | Reported below; cohort n is computed, not hard-coded |
-| 11 | EFU data | No CSF file was submitted | The 22 CSF patients in the master have no EFU data | Reported below |
-| 12 | EFU data | One `efu_lttbili` value is a below-detection string (`<x.x`) | `as.numeric()` → `NA` | Parsed with `readr::parse_number()` (uses the limit value) |
-| 13 | shared pipeline | `create_table_one()` renders the HTML table with `overall = "Overall"`, and `table1` passes that Overall column into the `pvalue()` helper as a **third group** | Every HTML p-value is computed on (group 0, group 1, Overall) — e.g. `sex_male` p = 0.239 instead of 0.121 — and 2-group continuous variables get a Kruskal-Wallis instead of Mann-Whitney. The tableone CSVs are unaffected | `pvalue()` is redefined below to drop the `overall` element before testing, so the HTML and CSV p-values agree |
+| ID | Bug | Handling in this file |
+|:--|:--|:--|
+| S1 | Shared `create_table_one()` passes the Overall column into `pvalue()` → HTML p-values inflated | `pvalue()` redefined in the setup chunk and installed in the global env |
+| S2 | Shared pipeline yields `mean_map_day0.x` / `.y` instead of `mean_map_day0` | `map_day0_avg` computed here |
+| S3 | Day-0 MAP fields use `0` as "not measured" | `0 → NA` before averaging |
+| L5 | Old scripts used serum albumin (`alb_terli_dayN`) for "albumin given" | `albumintotal_terli_dayX` row = shared `total_albumin` (grams given, days 0–13) |
+| D1 | Yale IDs `YAL-00N` vs `Yale-N` | Normalized join key |
+| D2 | One CCF EFU row is not in the master | Cohort n = 221 (computed) |
 
 ```{r setup}
 #| include: false
@@ -65,7 +59,7 @@ source(knitr::purl(
   quiet  = TRUE
 ))
 
-# --- Fix for shared-pipeline bug #13 -----------------------------------------
+# --- Fix for shared-pipeline bug S1 (see bugs.qmd) -----------------------------------------
 # table1::table1(..., overall = "Overall", extra.col = list("P-value" = pvalue))
 # passes the Overall column into `pvalue()` as an extra stratum. Drop it so
 # the test compares only the real strata (matches the tableone CSV).
