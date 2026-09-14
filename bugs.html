@@ -9,7 +9,7 @@
 <meta name="author" content="Tianqi Ouyang">
 <meta name="dcterms.date" content="2026-09-14">
 
-<title>Extended Follow-Up (EFU) Variables – Terlipressin — Liver Transplant</title>
+<title>Bug Tracker – Terlipressin — Liver Transplant</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -106,7 +106,7 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">Derived Variables</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="./efu_variables.html" aria-current="page"> 
+    <a class="nav-link" href="./efu_variables.html"> 
 <span class="menu-text">EFU Variables</span></a>
   </li>  
   <li class="nav-item">
@@ -114,7 +114,7 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">Analysis</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./bugs.html"> 
+    <a class="nav-link active" href="./bugs.html" aria-current="page"> 
 <span class="menu-text">Bug Tracker</span></a>
   </li>  
 </ul>
@@ -125,23 +125,31 @@ ul.task-list li input[type="checkbox"] {
     </nav>
 </header>
 <!-- content -->
-<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#s-shared-pipeline-master-data" id="toc-s-shared-pipeline-master-data" class="nav-link active" data-scroll-target="#s-shared-pipeline-master-data">S — Shared pipeline / master data</a></li>
+  <li><a href="#l-legacy-scripts-in-code.rmd-this-project" id="toc-l-legacy-scripts-in-code.rmd-this-project" class="nav-link" data-scroll-target="#l-legacy-scripts-in-code.rmd-this-project">L — Legacy scripts in <code>Code/*.Rmd</code> (this project)</a></li>
+  <li><a href="#d-efu-site-data-finalized-files09sep2026" id="toc-d-efu-site-data-finalized-files09sep2026" class="nav-link" data-scroll-target="#d-efu-site-data-finalized-files09sep2026">D — EFU site data (<code>Finalized Files/09SEP2026/</code>)</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content">
+<main class="content column-page-left" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Extended Follow-Up (EFU) Variables</h1>
+<h1 class="title">Bug Tracker</h1>
 </div>
 
 
 
-<div class="quarto-title-meta">
+<div class="quarto-title-meta column-page-left">
 
     <div>
     <div class="quarto-title-meta-heading">Author</div>
@@ -165,511 +173,210 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>The <strong>Extended Follow-Up (EFU)</strong> REDCap form collects 1-year outcomes (readmission, death, RRT, transplant listing / transplant, and post-treatment and post-transplant creatinine) for the HARMONY cohort. Sites returned one de-identified CSV each (no dates — only the REDCap-calculated <code>efu_days*</code> fields relative to the index admission date), stored in the Partners Dropbox under <code>Extended Data Collection/Finalized Files/09SEP2026/</code>.</p>
-<p>Source: <a href="../EFU_DataDictionary.csv"><code>EFU_DataDictionary.csv</code></a> (REDCap data dictionary export).</p>
-<div class="callout callout-style-default callout-note callout-titled">
+<p>Every bug found while building this sub-project, with its status across the HARMONY sub-projects as of <strong>2026-09-14</strong>. “Fixed here” means the fix lives in this project’s <a href="./analysis.html"><code>docs/analysis.qmd</code></a>; nothing has been changed in the shared pipeline or in other projects.</p>
+<div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>Coding conventions
+<span class="screen-reader-only">Important</span>Shared-pipeline bugs are still open upstream
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<ul>
-<li><code>yesno</code> fields: <code>1</code> = Yes, <code>0</code> = No</li>
-<li><code>calc</code> fields are REDCap-calculated day counts from <strong>index admission date</strong> (<code>admit_date</code>), <em>not</em> from terlipressin initiation</li>
-<li><code>text</code> lab fields (creatinine, bilirubin, INR, Na, albumin) are numeric strings; values reported as below the detection limit (e.g.&nbsp;<code>&lt;0.2</code>) are parsed to the limit value in the analysis</li>
-<li>Radio <code>efu_listing</code>: <code>0</code> = Not listed, <code>1</code> = Listed or transplanted</li>
-<li>Dropdown <code>codestatus</code>: <code>0</code> = DNR, <code>1</code> = Full code</li>
-</ul>
+<p>Bugs <strong>S1–S3</strong> are in <code>Terlipressin/code/shared_pipeline.qmd</code> (or in the master xlsx it loads). I checked every sub-project on 2026-09-14 — none of them has fixed S1 or S2; only Xing and this project handle S3. Until the shared pipeline is patched, each sub-project needs the local workaround shown in the <em>Handling here</em> column.</p>
 </div>
 </div>
-<div class="cell">
-<div class="cell-output-display">
-<table class="caption-top table table-sm table-striped small">
+<section id="s-shared-pipeline-master-data" class="level2">
+<h2 class="anchored" data-anchor-id="s-shared-pipeline-master-data">S — Shared pipeline / master data</h2>
+<table class="caption-top table">
 <colgroup>
-<col style="width: 1%">
-<col style="width: 13%">
-<col style="width: 4%">
-<col style="width: 40%">
-<col style="width: 35%">
-<col style="width: 5%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
 </colgroup>
 <thead>
 <tr class="header">
-<th style="text-align: right;">#</th>
-<th style="text-align: left;">Variable</th>
-<th style="text-align: left;">Type</th>
-<th style="text-align: left;">Label</th>
-<th style="text-align: left;">Choices / Calculation</th>
-<th style="text-align: left;">Validation</th>
+<th style="text-align: left;">ID</th>
+<th style="text-align: left;">Where</th>
+<th style="text-align: left;">Bug</th>
+<th style="text-align: left;">Impact</th>
+<th style="text-align: left;">Other projects (checked 2026-09-14)</th>
+<th style="text-align: left;">Handling here</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: right;">1</td>
-<td style="text-align: left;"><code>codestatus</code></td>
-<td style="text-align: left;">dropdown</td>
-<td style="text-align: left;">Code Status at time of Terlipressin Treatment</td>
-<td style="text-align: left;">0, DNR &amp;#124; 1, Full Code</td>
-<td style="text-align: left;"></td>
+<td style="text-align: left;"><strong>S1</strong></td>
+<td style="text-align: left;"><code>create_table_one()</code> → <code>pvalue()</code>; introduced in <em>Adverse event</em> <code>docs/results.qmd</code> commit <code>71a88fb</code> (2026-04-13), copied into the shared pipeline 2026-04-14</td>
+<td style="text-align: left;"><code>table1::table1(..., overall = "Overall", extra.col = list("P-value" = pvalue))</code> passes the <strong>Overall</strong> column into <code>pvalue()</code> as an extra stratum (element named <code>overall</code>, table1 1.4.3)</td>
+<td style="text-align: left;">Every <strong>HTML</strong> p-value is computed on (group A, group B, Overall): inflated p-values, and Kruskal-Wallis instead of Mann-Whitney for 2-group continuous variables. The tableone <strong>CSV</strong> written by the same call is correct. Example: this project <code>sex_male</code> 0.239 vs 0.121; AlcHep <code>scr_admit</code> 0.431 (site) vs 0.195 (CSV)</td>
+<td style="text-align: left;"><strong>Not fixed anywhere.</strong> Affected (HTML p-values wrong on the published site): <em>Adverse event</em> (own copy, 9 tables, newest version 2026-07-23 still has it), <em>AlcHep</em> (2 tables), <em>Xing</em> (1 table), <em>Other Vasoconstrictors</em> (1 table, site not rendered). Not affected: <em>Cardio</em> (overrides with a tableone-only CSV + kable version), main <em>Terlipressin</em> <code>Tables.Rmd</code> / <code>docs/data_summary.qmd</code> (tableone only)</td>
+<td style="text-align: left;"><code>pvalue()</code> redefined in the setup chunk to drop the <code>overall</code> element, then <code>assign()</code>ed into the global env (knitr chunks run in a child env, so a plain redefinition is not seen by <code>create_table_one</code>). HTML now matches CSV</td>
 </tr>
 <tr class="even">
-<td style="text-align: right;">2</td>
-<td style="text-align: left;"><code>daydischarge_4</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">1 Year Post index Hospitalization:</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;">date_mdy</td>
+<td style="text-align: left;"><strong>S2</strong></td>
+<td style="text-align: left;"><code>mean-map</code> + <code>derived-variables</code> chunks</td>
+<td style="text-align: left;">The master xlsx already contains <code>mean_map_day0</code> (written by <code>Tables.Rmd</code>); the pipeline merges a second copy → <code>mean_map_day0.x</code> / <code>mean_map_day0.y</code>, no plain <code>mean_map_day0</code>, although <code>CLAUDE.md</code> lists it as provided</td>
+<td style="text-align: left;">Any <code>all_vars</code> entry <code>mean_map_day0</code> / <code>map_day0</code> is silently removed by <code>intersect(all_vars, names(data))</code></td>
+<td style="text-align: left;"><strong>Not fixed anywhere.</strong> <em>Xing</em> Table 1 lists <code>"map_day0"</code> → the row is missing from its published table and CSV (confirmed: no MAP row in <code>table1_death_status_90days_init.csv</code>). Other projects do not reference the variable</td>
+<td style="text-align: left;"><code>map_day0_avg</code> computed explicitly from the four <code>map_terli_day0_time*</code> fields</td>
 </tr>
 <tr class="odd">
-<td style="text-align: right;">3</td>
-<td style="text-align: left;"><code>efu_readmit</code></td>
-<td style="text-align: left;">yesno</td>
-<td style="text-align: left;">Was this patient readmitted within 1 year following index hospitalization?</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
+<td style="text-align: left;"><strong>S3</strong></td>
+<td style="text-align: left;">Master data <code>map_terli_day0_time0..3</code> (and therefore both copies of <code>mean_map_day0</code>)</td>
+<td style="text-align: left;"><code>0</code> is used as a “not measured” placeholder (25 / 4 / 2 / 2 readings); <code>Tables.Rmd</code> and the pipeline average it as a real pressure</td>
+<td style="text-align: left;">Day-0 MAP mean biased downward for ~30 patients</td>
+<td style="text-align: left;"><em>Xing</em> recodes <code>0 → NA</code> and takes the median (<code>map_terli_day0</code>). Not handled in the main project, Cardio, AlcHep, Adverse event, Other Vasoconstrictors</td>
+<td style="text-align: left;"><code>0 → NA</code> before averaging</td>
 </tr>
 <tr class="even">
-<td style="text-align: right;">4</td>
-<td style="text-align: left;"><code>efu_readmitdate</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">Date of first hospital readmission</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;">date_mdy</td>
+<td style="text-align: left;"><strong>S4</strong></td>
+<td style="text-align: left;">REDCap export column <code>map_terli_time1_day1</code></td>
+<td style="text-align: left;">Mis-named field (should be <code>map_terli_day1_time1</code>), so <code>starts_with("map_terli_day")</code> in the pipeline never sees it</td>
+<td style="text-align: left;">Day-1 MAP mean uses 3 readings instead of 4 (does not affect day 0)</td>
+<td style="text-align: left;">Not handled anywhere</td>
+<td style="text-align: left;">Not used in this project; noted</td>
 </tr>
 <tr class="odd">
-<td style="text-align: right;">5</td>
-<td style="text-align: left;"><code>efu_daysreadmit</code></td>
-<td style="text-align: left;">calc</td>
-<td style="text-align: left;">Days from admission to first readmission</td>
-<td style="text-align: left;">rounddown((datediff([admit_date],[efu_readmitdate],“d”,“mdy”,true)),1)</td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">6</td>
-<td style="text-align: left;"><code>efu_readmit_cirrhosiscomp</code></td>
-<td style="text-align: left;">yesno</td>
-<td style="text-align: left;">Was the readmission related to cirrhosis (ascites, HE, infection, bleeding, etc.)?</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">7</td>
-<td style="text-align: left;"><code>efu_readmitaki</code></td>
-<td style="text-align: left;">yesno</td>
-<td style="text-align: left;">Was the readmission related to an Acute Kidney Injury ?</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">8</td>
-<td style="text-align: left;"><code>efu_readmitscr</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">Serum Creatinine at time of readmission:</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">9</td>
-<td style="text-align: left;"><code>efu_status</code></td>
-<td style="text-align: left;">yesno</td>
-<td style="text-align: left;">Is the subject alive?</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">10</td>
-<td style="text-align: left;"><code>efu_lastencounter</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">Date of Last Follow-up</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;">date_mdy</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">11</td>
-<td style="text-align: left;"><code>efu_dayslastencounter</code></td>
-<td style="text-align: left;">calc</td>
-<td style="text-align: left;">Days from admission to last follow-up</td>
-<td style="text-align: left;">rounddown((datediff([admit_date],[efu_lastencounter],“d”,“mdy”)),1)</td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">12</td>
-<td style="text-align: left;"><code>efu_dod</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">Date of Death</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;">date_mdy</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">13</td>
-<td style="text-align: left;"><code>efu_daysdod</code></td>
-<td style="text-align: left;">calc</td>
-<td style="text-align: left;">Days from Admission to Death</td>
-<td style="text-align: left;">rounddown((datediff([admit_date],[efu_dod],“d”,“mdy”)),1)</td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">14</td>
-<td style="text-align: left;"><code>efu_rrt</code></td>
-<td style="text-align: left;">yesno</td>
-<td style="text-align: left;">Was Renal Replacement Therapy (RRT) initiated after index discharge?</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">15</td>
-<td style="text-align: left;"><code>efu_rrtstartdate</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">Date of RRT initiation</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;">date_mdy</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">16</td>
-<td style="text-align: left;"><code>efu_daysrrtstart</code></td>
-<td style="text-align: left;">calc</td>
-<td style="text-align: left;">Days from admission to RRT initiation</td>
-<td style="text-align: left;">rounddown((datediff([admit_date],[efu_rrtstartdate],“d”,“mdy”)),1)</td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">17</td>
-<td style="text-align: left;"><code>efu_listingstatus</code></td>
-<td style="text-align: left;">yesno</td>
-<td style="text-align: left;">Was this patient listed for Liver Transplant at any point?</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">18</td>
-<td style="text-align: left;"><code>efu_listingdate</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">Date of Listing</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;">date_mdy</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">19</td>
-<td style="text-align: left;"><code>efu_dayslisting</code></td>
-<td style="text-align: left;">calc</td>
-<td style="text-align: left;">Days from Admission to Listing</td>
-<td style="text-align: left;">rounddown((datediff([admit_date],[efu_listingdate],“d”,“mdy”,true)),1)</td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">20</td>
-<td style="text-align: left;"><code>efu_listing</code></td>
-<td style="text-align: left;">radio</td>
-<td style="text-align: left;">Current Listing Status</td>
-<td style="text-align: left;">0, Not Listed &amp;#124; 1, Listed or Transplanted</td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">21</td>
-<td style="text-align: left;"><code>efu_wlremovaldate</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">Date of Waitlist Removal</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;">date_mdy</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">22</td>
-<td style="text-align: left;"><code>efu_dayswlremoval</code></td>
-<td style="text-align: left;">calc</td>
-<td style="text-align: left;">Days from Admission to Waitlist Removal</td>
-<td style="text-align: left;">rounddown((datediff([admit_date],[efu_wlremovaldate],“d”,“mdy”,true)),1)</td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">23</td>
-<td style="text-align: left;"><code>efu_lt</code></td>
-<td style="text-align: left;">yesno</td>
-<td style="text-align: left;">Did the patient receive a Liver Transplant?</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">24</td>
-<td style="text-align: left;"><code>efu_ltdate</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">Date of Transplant</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;">date_mdy</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">25</td>
-<td style="text-align: left;"><code>efu_dayslt</code></td>
-<td style="text-align: left;">calc</td>
-<td style="text-align: left;">Days from Admission to Transplant</td>
-<td style="text-align: left;">rounddown((datediff([admit_date],[efu_ltdate],“d”,“mdy”)),1)</td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">26</td>
-<td style="text-align: left;"><code>efu_slkt</code></td>
-<td style="text-align: left;">yesno</td>
-<td style="text-align: left;">Did the patient receive a SLKT?</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">27</td>
-<td style="text-align: left;"><code>efu_kal</code></td>
-<td style="text-align: left;">yesno</td>
-<td style="text-align: left;">Did patient receive a Kidney transplant after LT ?</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">28</td>
-<td style="text-align: left;"><code>efu_kaldate</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">Date of Kidney Transplant</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;">date_mdy</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">29</td>
-<td style="text-align: left;"><code>efu_dayskal</code></td>
-<td style="text-align: left;">calc</td>
-<td style="text-align: left;">Days from Admission to Kidney Transplant</td>
-<td style="text-align: left;">rounddown((datediff([admit_date],[efu_kaldate],“d”,“mdy”)),1)</td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">30</td>
-<td style="text-align: left;"><code>efu_ltrrt</code></td>
-<td style="text-align: left;">yesno</td>
-<td style="text-align: left;">Did the patient require RRT after Liver Transplant?</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">31</td>
-<td style="text-align: left;"><code>efu_ltdate2</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">Date of Liver Transplant</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;">date_mdy</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">32</td>
-<td style="text-align: left;"><code>efu_ltna</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">Serum Na</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">33</td>
-<td style="text-align: left;"><code>efu_lttbili</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">Total Bilirubin</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">34</td>
-<td style="text-align: left;"><code>efu_ltscr</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">Serum Creatinine</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">35</td>
-<td style="text-align: left;"><code>efu_lt_albumin</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">Serum Albumin</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">36</td>
-<td style="text-align: left;"><code>efu_lt_inr</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">INR</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">37</td>
-<td style="text-align: left;"><code>terlidate</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">90 Days Post Terlipressin Treatment:</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;">date_mdy</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">38</td>
-<td style="text-align: left;"><code>efu_90_scr</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">Serum Creatinine 90 post Terlipressin Treatment (&lt;U+00B1&gt;30 days)</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">39</td>
-<td style="text-align: left;"><code>efu_90_rrt</code></td>
-<td style="text-align: left;">yesno</td>
-<td style="text-align: left;">Is the patient receiving RRT 90 days (&lt;U+00B1&gt;30) post-terlipressin treatment?</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">40</td>
-<td style="text-align: left;"><code>efu_90_readmit</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">Number of hospital readmissions within 90-days of terlipressin treatment:</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">41</td>
-<td style="text-align: left;"><code>efu_ltdate3</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">90 Days after Date of Liver Transplant:</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;">date_mdy</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">42</td>
-<td style="text-align: left;"><code>efu_90lt_scr</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">Serum Creatinine 90 days post-transplant (&lt;U+00B1&gt;30 days)</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">43</td>
-<td style="text-align: left;"><code>efu_90lt_rrt</code></td>
-<td style="text-align: left;">yesno</td>
-<td style="text-align: left;">Is the patient receiving RRT 90 days (&lt;U+00B1&gt;30) post-transplant?</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">44</td>
-<td style="text-align: left;"><code>terlidate_2</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">180 Days Post Terlipressin Treatment:</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;">date_mdy</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">45</td>
-<td style="text-align: left;"><code>efu_180_scr</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">Serum Creatinine 180 post terlipressin treatment (&lt;U+00B1&gt; 60 days)</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">46</td>
-<td style="text-align: left;"><code>efu_180_rrt</code></td>
-<td style="text-align: left;">yesno</td>
-<td style="text-align: left;">Is the patient receiving RRT 180 days (&lt;U+00B1&gt;60) post-terlipressin treatment?</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">47</td>
-<td style="text-align: left;"><code>efu_180_readmit</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">Number of hospital readmission within 180 days of terlipressin treatment</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">48</td>
-<td style="text-align: left;"><code>efu_ltdate4</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">180 Days after Date of Liver Transplant:</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;">date_mdy</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">49</td>
-<td style="text-align: left;"><code>efu_180lt_scr</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">Serum Creatinine 180 days post-transplant (&lt;U+00B1&gt; 60 days)</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">50</td>
-<td style="text-align: left;"><code>efu_180lt_rrt</code></td>
-<td style="text-align: left;">yesno</td>
-<td style="text-align: left;">Is the patient receiving RRT 180 days (&lt;U+00B1&gt;60) post-transplant?</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">51</td>
-<td style="text-align: left;"><code>daydischarge_3</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">1 Year Post Terlipressin Treatment:</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;">date_mdy</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">52</td>
-<td style="text-align: left;"><code>efu_1yr_scr</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">Serum Creatinine 1-year post terlipressin treatment (&lt;U+00B1&gt; 90 days):</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">53</td>
-<td style="text-align: left;"><code>efu_1yr_rrt</code></td>
-<td style="text-align: left;">yesno</td>
-<td style="text-align: left;">Is the patient receiving RRT 1 year (&lt;U+00B1&gt;90 days) post-terlipressin treatment?</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">54</td>
-<td style="text-align: left;"><code>efu_1yr_readmit</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">Number of hospital readmission within 1 year of terlipressin treatment:</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">55</td>
-<td style="text-align: left;"><code>efu_ltdate5</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">1 Year Post Liver Transplant:</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;">date_mdy</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">56</td>
-<td style="text-align: left;"><code>efu_1yrlt_scr</code></td>
-<td style="text-align: left;">text</td>
-<td style="text-align: left;">Serum Creatinine 1-year post-transplant (&lt;U+00B1&gt; 90 days)</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">57</td>
-<td style="text-align: left;"><code>efu_1yrlt_rrt</code></td>
-<td style="text-align: left;">yesno</td>
-<td style="text-align: left;">Is the patient receiving RRT 1 year (&lt;U+00B1&gt;90 days) post-transplant?</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
+<td style="text-align: left;"><strong>S5</strong></td>
+<td style="text-align: left;"><code>Terlipressin</code> git repo</td>
+<td style="text-align: left;">The <code>create_table_one</code> section of <code>shared_pipeline.qmd</code> and the matching <code>CLAUDE.md</code> edits are <strong>uncommitted</strong> (working copy 2026-04-14; last commit <code>d2d94f5</code> 2026-04-13 does not contain them). Upstream <code>origin/main</code> has nothing newer</td>
+<td style="text-align: left;">A fresh clone would not have <code>create_table_one()</code>; the “most updated” pipeline exists only on this machine</td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">This project sources the local working copy (the most updated version)</td>
 </tr>
 </tbody>
 </table>
-</div>
-</div>
+</section>
+<section id="l-legacy-scripts-in-code.rmd-this-project" class="level2">
+<h2 class="anchored" data-anchor-id="l-legacy-scripts-in-code.rmd-this-project">L — Legacy scripts in <code>Code/*.Rmd</code> (this project)</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">ID</th>
+<th style="text-align: left;">File</th>
+<th style="text-align: left;">Bug</th>
+<th style="text-align: left;">Impact</th>
+<th style="text-align: left;">Handling here</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>L1</strong></td>
+<td style="text-align: left;"><code>liver-transplant-0922.Rmd</code></td>
+<td style="text-align: left;"><code>rrt_90days = ifelse(is.na(days_to_rrt) &amp; days_to_rrt &lt;= 90, 1, 0)</code> — <code>is.na(x) &amp; x &lt;= 90</code> can never be <code>TRUE</code>; <code>lt_90days</code> has the same bug and also compares <code>days_to_rrt</code> instead of <code>days_to_lt</code></td>
+<td style="text-align: left;"><code>rrt_90days</code> / <code>lt_90days</code> were never 1</td>
+<td style="text-align: left;">Corrected in the later <code>liver request 11122025.Rmd</code>; not needed here (EFU has its own RRT / LT fields)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>L2</strong></td>
+<td style="text-align: left;"><code>liver-transplant-0922.Rmd</code></td>
+<td style="text-align: left;"><code>albvolume_before_terli</code> in <code>num_vars</code> but not in <code>all_vars</code></td>
+<td style="text-align: left;">Silently dropped from every Table 1</td>
+<td style="text-align: left;">Included</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>L3</strong></td>
+<td style="text-align: left;"><code>liver-transplant-0922.Rmd</code></td>
+<td style="text-align: left;">“Table 4” chunk is an exact duplicate of “Table 3” (same strata, same output path)</td>
+<td style="text-align: left;">Same CSV written twice</td>
+<td style="text-align: left;">Removed</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>L4</strong></td>
+<td style="text-align: left;"><code>liver request 11122025.Rmd</code></td>
+<td style="text-align: left;"><code>mutate(ifelse(is.na(refascites_previous_comp), 0, refascites_previous_comp))</code> has no <code>name =</code></td>
+<td style="text-align: left;">Creates a column literally named <code>ifelse(...)</code>; the intended NA → 0 recode never reached the logistic model</td>
+<td style="text-align: left;">Not applicable (no recode requested); flagged</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>L5</strong></td>
+<td style="text-align: left;">both <code>.Rmd</code></td>
+<td style="text-align: left;"><code>alb_terli_discont_day</code> built from <code>alb_terli_dayN</code> = <strong>serum albumin (g/dL)</strong>, but the request asked for albumin <strong>given</strong></td>
+<td style="text-align: left;">“Albumin during therapy” in the old Table 1 was a lab value, not a dose</td>
+<td style="text-align: left;"><code>albumintotal_terli_dayN</code> (grams given per day) summed over treatment days = shared <code>total_albumin</code> (verified: nothing recorded after <code>Discont_Day</code>)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>L6</strong></td>
+<td style="text-align: left;">both <code>.Rmd</code></td>
+<td style="text-align: left;">Read the superseded <code>/Users/to909/Desktop/Terlipressin/final_master_0508.xlsx</code></td>
+<td style="text-align: left;">Predates the cleaned master</td>
+<td style="text-align: left;">Shared pipeline → <code>final_master_01282026.xlsx</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="d-efu-site-data-finalized-files09sep2026" class="level2">
+<h2 class="anchored" data-anchor-id="d-efu-site-data-finalized-files09sep2026">D — EFU site data (<code>Finalized Files/09SEP2026/</code>)</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">ID</th>
+<th style="text-align: left;">Site / field</th>
+<th style="text-align: left;">Bug</th>
+<th style="text-align: left;">Impact</th>
+<th style="text-align: left;">Handling here</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>D1</strong></td>
+<td style="text-align: left;">Yale</td>
+<td style="text-align: left;">IDs are <code>YAL-00N</code> in the EFU file but <code>Yale-N</code> in the master (different prefix <em>and</em> zero-padding)</td>
+<td style="text-align: left;">All 5 Yale patients failed a plain <code>subjectid</code> join</td>
+<td style="text-align: left;">Join on a normalized key: upper-case prefix (<code>YAL</code> → <code>YALE</code>) + integer number</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>D2</strong></td>
+<td style="text-align: left;">CCF</td>
+<td style="text-align: left;">Site file has 41 rows; master has 40 CCF patients. The extra ID is a “gap” number inside the master’s CCF range — a REDCap subject not in the locked master</td>
+<td style="text-align: left;">222 EFU rows → <strong>221</strong> analyzable patients</td>
+<td style="text-align: left;">Reported in the join QC; cohort n is computed, not hard-coded. Ask CCF whether this subject should exist in the master</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>D3</strong></td>
+<td style="text-align: left;">CSF</td>
+<td style="text-align: left;">No CSF file was submitted</td>
+<td style="text-align: left;">The 22 CSF master patients have no EFU data</td>
+<td style="text-align: left;">Reported in the join QC</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>D4</strong></td>
+<td style="text-align: left;"><code>efu_lttbili</code></td>
+<td style="text-align: left;">One value is a below-detection string (<code>&lt;x.x</code>)</td>
+<td style="text-align: left;"><code>as.numeric()</code> → <code>NA</code></td>
+<td style="text-align: left;"><code>readr::parse_number()</code> keeps the limit value</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>D5</strong></td>
+<td style="text-align: left;"><code>efu_listingstatus</code></td>
+<td style="text-align: left;">One patient has a missing value</td>
+<td style="text-align: left;">Tables 1 and 3 use n = 220; Table 2 uses n = 221</td>
+<td style="text-align: left;">Stated in each table’s caption</td>
+</tr>
+</tbody>
+</table>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

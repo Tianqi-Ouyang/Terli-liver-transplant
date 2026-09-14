@@ -148,6 +148,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="nav-link active" href="./analysis.html" aria-current="page"> 
 <span class="menu-text">Analysis</span></a>
   </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./bugs.html"> 
+<span class="menu-text">Bug Tracker</span></a>
+  </li>  
 </ul>
           </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
@@ -165,7 +169,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#scope" id="toc-scope" class="nav-link active" data-scroll-target="#scope">Scope</a></li>
-  <li><a href="#legacy-code-review-errors-found" id="toc-legacy-code-review-errors-found" class="nav-link" data-scroll-target="#legacy-code-review-errors-found">Legacy Code Review — Errors Found</a></li>
+  <li><a href="#bugs-found-summary" id="toc-bugs-found-summary" class="nav-link" data-scroll-target="#bugs-found-summary">Bugs Found (summary)</a></li>
   <li><a href="#efu-data-import" id="toc-efu-data-import" class="nav-link" data-scroll-target="#efu-data-import">EFU Data Import</a>
   <ul class="collapse">
   <li><a href="#join-qc" id="toc-join-qc" class="nav-link" data-scroll-target="#join-qc">Join QC</a></li>
@@ -255,117 +259,52 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="legacy-code-review-errors-found" class="level1">
-<h1>Legacy Code Review — Errors Found</h1>
-<p>The previous analyses in <code>Code/*.Rmd</code> were reviewed before this file was written. The following problems were found; none of them are carried forward here.</p>
+<section id="bugs-found-summary" class="level1">
+<h1>Bugs Found (summary)</h1>
+<p>The legacy <code>Code/*.Rmd</code> scripts, the shared pipeline and the EFU site files were reviewed before this analysis was written. All findings, with their status in the other HARMONY sub-projects, are listed on the <a href="./bugs.html"><strong>Bug Tracker</strong></a> page. The ones that change how this file works:</p>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
 </colgroup>
 <thead>
 <tr class="header">
-<th style="text-align: left;">#</th>
-<th style="text-align: left;">File</th>
-<th style="text-align: left;">Error</th>
-<th style="text-align: left;">Consequence</th>
-<th style="text-align: left;">Handling here</th>
+<th style="text-align: left;">ID</th>
+<th style="text-align: left;">Bug</th>
+<th style="text-align: left;">Handling in this file</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">1</td>
-<td style="text-align: left;"><code>liver-transplant-0922.Rmd</code></td>
-<td style="text-align: left;"><code>rrt_90days = ifelse(is.na(days_to_rrt) &amp; days_to_rrt &lt;= 90, 1, 0)</code> — <code>is.na(x) &amp; x &lt;= 90</code> can never be <code>TRUE</code></td>
-<td style="text-align: left;"><code>rrt_90days</code> was never 1. Same bug in <code>lt_90days</code>, which additionally compared <code>days_to_rrt</code> instead of <code>days_to_lt</code></td>
-<td style="text-align: left;">Fixed in the later <code>liver request 11122025.Rmd</code>; not needed here (EFU has its own RRT / LT fields)</td>
+<td style="text-align: left;">S1</td>
+<td style="text-align: left;">Shared <code>create_table_one()</code> passes the Overall column into <code>pvalue()</code> → HTML p-values inflated</td>
+<td style="text-align: left;"><code>pvalue()</code> redefined in the setup chunk and installed in the global env</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2</td>
-<td style="text-align: left;"><code>liver-transplant-0922.Rmd</code></td>
-<td style="text-align: left;"><code>albvolume_before_terli</code> listed in <code>num_vars</code> but not in <code>all_vars</code></td>
-<td style="text-align: left;">Silently dropped from every Table 1</td>
-<td style="text-align: left;">Included in <code>all_vars</code></td>
+<td style="text-align: left;">S2</td>
+<td style="text-align: left;">Shared pipeline yields <code>mean_map_day0.x</code> / <code>.y</code> instead of <code>mean_map_day0</code></td>
+<td style="text-align: left;"><code>map_day0_avg</code> computed here</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">3</td>
-<td style="text-align: left;"><code>liver-transplant-0922.Rmd</code></td>
-<td style="text-align: left;">“Table 4” chunk is an exact duplicate of “Table 3” (same strata, same output path)</td>
-<td style="text-align: left;">Same CSV written twice</td>
-<td style="text-align: left;">Removed</td>
+<td style="text-align: left;">S3</td>
+<td style="text-align: left;">Day-0 MAP fields use <code>0</code> as “not measured”</td>
+<td style="text-align: left;"><code>0 → NA</code> before averaging</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">4</td>
-<td style="text-align: left;"><code>liver request 11122025.Rmd</code></td>
-<td style="text-align: left;"><code>mutate(ifelse(is.na(refascites_previous_comp), 0, refascites_previous_comp))</code> has no <code>name =</code></td>
-<td style="text-align: left;">Creates a column literally named <code>ifelse(...)</code>; the intended NA → 0 recode never reached <code>refascites_previous_comp</code>, so the logistic model silently dropped those rows</td>
-<td style="text-align: left;">Not applicable here (no recode requested); flagged</td>
+<td style="text-align: left;">L5</td>
+<td style="text-align: left;">Old scripts used serum albumin (<code>alb_terli_dayN</code>) for “albumin given”</td>
+<td style="text-align: left;"><code>albumintotal_terli_dayX</code> row = shared <code>total_albumin</code> (grams given, days 0–13)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">5</td>
-<td style="text-align: left;">both <code>.Rmd</code></td>
-<td style="text-align: left;"><code>alb_terli_discont_day</code> was built from the <code>alb_terli_dayN</code> fields, which are <strong>serum albumin (g/dL)</strong>, not albumin <em>given</em></td>
-<td style="text-align: left;">The “albumin during therapy” row in the old Table 1 was a lab value, not a dose</td>
-<td style="text-align: left;">Albumin given is <code>albumintotal_terli_dayN</code> (grams/day); the shared pipeline sums days 0–13 into <code>total_albumin</code>, used here for the requested <code>albumintotal_terli_dayX</code> row. No albumin is recorded after <code>Discont_Day</code>, so the sum equals “total albumin during therapy”</td>
+<td style="text-align: left;">D1</td>
+<td style="text-align: left;">Yale IDs <code>YAL-00N</code> vs <code>Yale-N</code></td>
+<td style="text-align: left;">Normalized join key</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">6</td>
-<td style="text-align: left;">both <code>.Rmd</code></td>
-<td style="text-align: left;">Read the superseded <code>/Users/to909/Desktop/Terlipressin/final_master_0508.xlsx</code></td>
-<td style="text-align: left;">Predates the cleaned master</td>
-<td style="text-align: left;">Shared pipeline → <code>final_master_01282026.xlsx</code></td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">7</td>
-<td style="text-align: left;">shared pipeline</td>
-<td style="text-align: left;">The master xlsx already contains <code>mean_map_day0</code>; the pipeline merges a second copy, producing <code>mean_map_day0.x</code> / <code>.y</code> (no <code>mean_map_day0</code> column)</td>
-<td style="text-align: left;">Any sub-project referencing <code>mean_map_day0</code> / <code>map_day0</code> silently loses that row from its Table 1</td>
-<td style="text-align: left;"><code>map_day0_avg</code> is computed explicitly in this file</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">8</td>
-<td style="text-align: left;">master data</td>
-<td style="text-align: left;"><code>map_terli_day0_time0..3</code> contain <code>0</code> values (25 / 4 / 2 / 2 readings) — placeholders for “not measured”, not real pressures</td>
-<td style="text-align: left;">Averaging them in biases the day-0 MAP downward</td>
-<td style="text-align: left;"><code>0</code> → <code>NA</code> before averaging (same convention as the Xing sub-project)</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">9</td>
-<td style="text-align: left;">EFU data</td>
-<td style="text-align: left;">Yale IDs are <code>YAL-00N</code> in the EFU file but <code>Yale-N</code> in the master</td>
-<td style="text-align: left;">All 5 Yale patients failed to join</td>
-<td style="text-align: left;">Join on a normalized key: upper-case prefix (<code>YAL</code> → <code>YALE</code>) + integer number</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">10</td>
-<td style="text-align: left;">EFU data</td>
-<td style="text-align: left;">One CCF row (site file has 41 rows; master has 40 CCF patients) has an ID that is not in the master at all</td>
-<td style="text-align: left;">222 EFU rows → <strong>221</strong> analyzable patients</td>
-<td style="text-align: left;">Reported below; cohort n is computed, not hard-coded</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">11</td>
-<td style="text-align: left;">EFU data</td>
-<td style="text-align: left;">No CSF file was submitted</td>
-<td style="text-align: left;">The 22 CSF patients in the master have no EFU data</td>
-<td style="text-align: left;">Reported below</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">12</td>
-<td style="text-align: left;">EFU data</td>
-<td style="text-align: left;">One <code>efu_lttbili</code> value is a below-detection string (<code>&lt;x.x</code>)</td>
-<td style="text-align: left;"><code>as.numeric()</code> → <code>NA</code></td>
-<td style="text-align: left;">Parsed with <code>readr::parse_number()</code> (uses the limit value)</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">13</td>
-<td style="text-align: left;">shared pipeline</td>
-<td style="text-align: left;"><code>create_table_one()</code> renders the HTML table with <code>overall = "Overall"</code>, and <code>table1</code> passes that Overall column into the <code>pvalue()</code> helper as a <strong>third group</strong></td>
-<td style="text-align: left;">Every HTML p-value is computed on (group 0, group 1, Overall) — e.g.&nbsp;<code>sex_male</code> p = 0.239 instead of 0.121 — and 2-group continuous variables get a Kruskal-Wallis instead of Mann-Whitney. The tableone CSVs are unaffected</td>
-<td style="text-align: left;"><code>pvalue()</code> is redefined below to drop the <code>overall</code> element before testing, so the HTML and CSV p-values agree</td>
+<td style="text-align: left;">D2</td>
+<td style="text-align: left;">One CCF EFU row is not in the master</td>
+<td style="text-align: left;">Cohort n = 221 (computed)</td>
 </tr>
 </tbody>
 </table>

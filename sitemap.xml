@@ -2,10 +2,14 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://Tianqi-Ouyang.github.io/Terli-liver-transplant/analysis.html</loc>
-    <lastmod>2026-09-14T20:26:19.431Z</lastmod>
+    <lastmod>2026-09-14T21:39:59.340Z</lastmod>
   </url>
   <url>
-    <loc>https://Tianqi-Ouyang.github.io/Terli-liver-transplant/derived_variables.html</loc>
+    <loc>https://Tianqi-Ouyang.github.io/Terli-liver-transplant/index.html</loc>
+    <lastmod>2026-09-14T21:39:51.256Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Tianqi-Ouyang.github.io/Terli-liver-transplant/redcap_variables.html</loc>
     <lastmod>2026-04-14T08:55:48.537Z</lastmod>
   </url>
   <url>
@@ -13,11 +17,11 @@
     <lastmod>2026-09-14T20:19:43.492Z</lastmod>
   </url>
   <url>
-    <loc>https://Tianqi-Ouyang.github.io/Terli-liver-transplant/redcap_variables.html</loc>
+    <loc>https://Tianqi-Ouyang.github.io/Terli-liver-transplant/derived_variables.html</loc>
     <lastmod>2026-04-14T08:55:48.537Z</lastmod>
   </url>
   <url>
-    <loc>https://Tianqi-Ouyang.github.io/Terli-liver-transplant/index.html</loc>
-    <lastmod>2026-09-14T20:22:50.181Z</lastmod>
+    <loc>https://Tianqi-Ouyang.github.io/Terli-liver-transplant/bugs.html</loc>
+    <lastmod>2026-09-14T21:40:35.823Z</lastmod>
   </url>
 </urlset>
