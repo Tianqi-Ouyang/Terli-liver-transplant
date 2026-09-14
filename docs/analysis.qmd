@@ -2,6 +2,7 @@
 title: "Liver Transplant — Analysis"
 author: "Tianqi Ouyang"
 date: last-modified
+page-layout: full
 format:
   html:
     echo: true
@@ -34,7 +35,7 @@ status in the other HARMONY sub-projects, are listed on the
 
 | ID | Bug | Handling in this file |
 |:--|:--|:--|
-| S1 | Shared `create_table_one()` passes the Overall column into `pvalue()` → HTML p-values inflated | `pvalue()` redefined in the setup chunk and installed in the global env |
+| S1 | Shared `create_table_one()` passes the Overall column into `pvalue()` → HTML p-values inflated | Not used: tables are built with `tableone::CreateTableOne()` only and the printed matrix is shown on the page (see *Table Helper*) |
 | S2 | Shared pipeline yields `mean_map_day0.x` / `.y` instead of `mean_map_day0` | `map_day0_avg` computed here |
 | S3 | Day-0 MAP fields use `0` as "not measured" | `0 → NA` before averaging |
 | L5 | Old scripts used serum albumin (`alb_terli_dayN`) for "albumin given" | `albumintotal_terli_dayX` row = shared `total_albumin` (grams given, days 0–13) |
@@ -48,8 +49,6 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 library(tidyverse)
 library(readxl)
 library(tableone)
-library(table1)
-library(htmltools)
 
 # Load `master` (n = 243) and the shared helpers. `output = tempfile()` keeps
 # the purl()ed script out of the working directory.
@@ -59,45 +58,57 @@ source(knitr::purl(
   quiet  = TRUE
 ))
 
-# --- Fix for shared-pipeline bug S1 (see bugs.qmd) -----------------------------------------
-# table1::table1(..., overall = "Overall", extra.col = list("P-value" = pvalue))
-# passes the Overall column into `pvalue()` as an extra stratum. Drop it so
-# the test compares only the real strata (matches the tableone CSV).
-pvalue <- function(x, ...) {
-  x <- x[tolower(names(x)) != "overall"]
-  y <- unlist(x)
-  g <- factor(rep(1:length(x), times = sapply(x, length)))
-  if (is.numeric(y)) {
-    n_groups <- nlevels(droplevels(g))
-    if (n_groups == 2) {
-      p <- tryCatch(wilcox.test(y ~ g)$p.value, error = function(e) NA)
-      test_used <<- c(test_used, "wilcox")
-    } else {
-      p <- tryCatch(kruskal.test(y ~ g)$p.value, error = function(e) NA)
-      test_used <<- c(test_used, "kruskal")
-    }
-  } else {
-    tbl <- table(y, g)
-    if (nrow(tbl) < 2 || ncol(tbl) < 2) {
-      p <- NA
-      test_used <<- c(test_used, "none")
-    } else if (any(tbl < 5)) {
-      p <- tryCatch(fisher.test(tbl)$p.value, error = function(e) NA)
-      test_used <<- c(test_used, "fisher")
-    } else {
-      p <- tryCatch(chisq.test(tbl)$p.value, error = function(e) NA)
-      test_used <<- c(test_used, "chisq")
-    }
-  }
-  pval <- if (is.na(p)) "" else sub("<", "&lt;", format.pval(p, digits = 3, eps = 0.001))
-  c("", pval)
-}
-# `source()` defined the pipeline functions in the global environment, and
-# knitr evaluates this chunk in a child environment, so `create_table_one()`
-# would still find the pipeline's `pvalue`. Install the fixed version there.
-assign("pvalue", pvalue, envir = globalenv())
-
 dir.create("tables", showWarnings = FALSE)
+```
+
+# Table Helper (tableone only)
+
+The shared pipeline's `create_table_one()` renders an HTML table with the
+`table1` package whose p-values are wrong (bug **S1**: the Overall column is
+tested as a third group). This project does not use that path. The function
+below is the original, tableone-only version: `tableone::CreateTableOne()`
+→ `print()` → `write.csv()`, and the **same printed matrix** is shown on this
+page with `knitr::kable()`, so the web table and the CSV are identical.
+
+Conventions (tableone defaults, matching every earlier Table 1 CSV in the
+registry): continuous variables as median [IQR] with the Kruskal-Wallis
+rank-sum test (`test = nonnorm`; equivalent to Mann-Whitney for two groups);
+categorical variables as n (%) with the chi-squared test (continuity-corrected
+for 2 × 2). `Missing` is the percentage of the cohort with a missing value.
+
+```{r table-one-helper}
+#| code-summary: "Show create_table_one() (tableone only)"
+# Overrides the shared-pipeline version for this document (chunk environment
+# takes precedence). Returns the printed tableone matrix invisibly so the
+# caller can kable() exactly what was written to the CSV.
+create_table_one <- function(all_vars, data, strata, output,
+                             cat_vars = NULL, exact = NULL) {
+  all_vars <- intersect(all_vars, names(data))
+  numerical_vars <- if (is.null(cat_vars)) all_vars else setdiff(all_vars, cat_vars)
+
+  T1 <- tableone::CreateTableOne(
+    vars       = all_vars,
+    strata     = strata,
+    data       = data,
+    factorVars = cat_vars,
+    addOverall = TRUE,
+    includeNA  = FALSE
+  )
+
+  T1_print <- print(
+    T1,
+    showAllLevels = TRUE,
+    exact         = exact,
+    nonnormal     = numerical_vars,
+    missing       = TRUE,
+    quote         = FALSE,
+    noSpaces      = TRUE,
+    printToggle   = FALSE
+  )
+
+  write.csv(T1_print, file = output, row.names = TRUE)
+  invisible(T1_print)
+}
 ```
 
 # EFU Data Import
@@ -254,8 +265,8 @@ with(efu_cohort,
 # Table 1 — Demographics by `efu_listingstatus`
 
 Cohort: EFU patients with a non-missing `efu_listingstatus`. Continuous
-variables are median [Q1, Q3] (Mann-Whitney U); categorical are n (%)
-(chi-squared, or Fisher's exact when any cell < 5).
+variables are median [IQR] (Kruskal-Wallis / Mann-Whitney, `test = nonnorm`);
+categorical are n (%) (chi-squared).
 
 ```{r table1}
 #| code-summary: "Show Table 1 code"
@@ -278,13 +289,14 @@ t1_cat_vars <- setdiff(t1_all_vars, t1_numeric)
 
 t1_data <- efu_cohort %>% filter(!is.na(efu_listingstatus))
 
-create_table_one(
+t1 <- create_table_one(
   all_vars = t1_all_vars,
   cat_vars = t1_cat_vars,
   data     = t1_data,
   strata   = "efu_listingstatus",
   output   = "tables/table1_demographics_efu_listingstatus.csv"
 )
+knitr::kable(t1, caption = "Table 1 - Demographics by efu_listingstatus (0 = never listed, 1 = listed at any point)")
 ```
 
 [📥 Download CSV — Table 1](tables/table1_demographics_efu_listingstatus.csv)
@@ -308,13 +320,14 @@ efu_vars <- c(
 )
 efu_cat_vars <- intersect(efu_vars, efu_yesno)
 
-create_table_one(
+t2 <- create_table_one(
   all_vars = efu_vars,
   cat_vars = efu_cat_vars,
   data     = efu_cohort,
   strata   = "listed_transplant",
   output   = "tables/table2_efu_listed_transplant.csv"
 )
+knitr::kable(t2, caption = "Table 2 - EFU outcomes by listed_transplant (0 = not listed during index hospitalization, 1 = listed)")
 ```
 
 [📥 Download CSV — Table 2](tables/table2_efu_listed_transplant.csv)
@@ -328,13 +341,14 @@ Table 2 minus the stratifier.
 #| code-summary: "Show Table 3 code"
 t3_vars <- setdiff(efu_vars, "efu_listingstatus")
 
-create_table_one(
+t3 <- create_table_one(
   all_vars = t3_vars,
   cat_vars = intersect(t3_vars, efu_yesno),
   data     = t1_data,
   strata   = "efu_listingstatus",
   output   = "tables/table3_efu_efu_listingstatus.csv"
 )
+knitr::kable(t3, caption = "Table 3 - EFU outcomes by efu_listingstatus (0 = never listed, 1 = listed at any point)")
 ```
 
 [📥 Download CSV — Table 3](tables/table3_efu_efu_listingstatus.csv)

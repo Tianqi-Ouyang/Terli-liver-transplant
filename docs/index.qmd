@@ -49,7 +49,7 @@ flowchart TD
 
 | Path | Description |
 |:-----|:-----------|
-| `docs/analysis.qmd` | Canonical analysis — sources the shared pipeline, imports EFU data, renders Tables 1–3 |
+| `docs/analysis.qmd` | Canonical analysis — sources the shared pipeline, imports EFU data, renders Tables 1–3 with `tableone::CreateTableOne()` (the page shows the same output as the CSVs) |
 | `docs/efu_variables.qmd` | EFU REDCap data dictionary, rendered |
 | `docs/bugs.qmd` | Bug tracker — every bug found (legacy scripts, shared pipeline, EFU data) with cross-project status |
 | `docs/tables/` | CSV versions of the tables |

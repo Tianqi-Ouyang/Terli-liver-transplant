@@ -30,7 +30,7 @@ HARMONY Terlipressin **Liver Transplant** sub-project — 1-year extended follow
 | 2 | EFU summary | `listed_transplant` | all 40 EFU fields |
 | 3 | EFU summary | `efu_listingstatus` | same minus stratifier |
 
-Tables use the shared pipeline's `create_table_one()` (table1 HTML + tableone CSV in `docs/tables/`).
+Tables are built with **`tableone::CreateTableOne()` only** — `docs/analysis.qmd` overrides the shared pipeline's `create_table_one()` with a tableone-only version (`CreateTableOne()` → `print()` → `write.csv()` to `docs/tables/`) and shows the same printed matrix on the page with `knitr::kable()`. Do **not** switch back to the shared table1 HTML version: its p-values include the Overall column as a third group (bug S1 in `docs/bugs.qmd`).
 
 ## Data Caveats (details and cross-project status in `docs/bugs.qmd`)
 
