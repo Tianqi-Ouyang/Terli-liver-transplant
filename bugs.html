@@ -173,7 +173,7 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>Every bug found while building this sub-project, with its status across the HARMONY sub-projects as of <strong>2026-09-14</strong>. “Fixed here” means the fix lives in this project’s <a href="./analysis.html"><code>docs/analysis.qmd</code></a>; nothing has been changed in the shared pipeline or in other projects.</p>
+<p>Every bug found while building this sub-project, with its status across the HARMONY sub-projects as of <strong>2026-09-14</strong>. “Handling here” means the workaround lives in this project’s <a href="./analysis.html"><code>docs/analysis.qmd</code></a>; nothing has been changed in the shared pipeline or in other projects.</p>
 <div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -215,7 +215,7 @@ ul.task-list li input[type="checkbox"] {
 <td style="text-align: left;"><code>table1::table1(..., overall = "Overall", extra.col = list("P-value" = pvalue))</code> passes the <strong>Overall</strong> column into <code>pvalue()</code> as an extra stratum (element named <code>overall</code>, table1 1.4.3)</td>
 <td style="text-align: left;">Every <strong>HTML</strong> p-value is computed on (group A, group B, Overall): inflated p-values, and Kruskal-Wallis instead of Mann-Whitney for 2-group continuous variables. The tableone <strong>CSV</strong> written by the same call is correct. Example: this project <code>sex_male</code> 0.239 vs 0.121; AlcHep <code>scr_admit</code> 0.431 (site) vs 0.195 (CSV)</td>
 <td style="text-align: left;"><strong>Not fixed anywhere.</strong> Affected (HTML p-values wrong on the published site): <em>Adverse event</em> (own copy, 9 tables, newest version 2026-07-23 still has it), <em>AlcHep</em> (2 tables), <em>Xing</em> (1 table), <em>Other Vasoconstrictors</em> (1 table, site not rendered). Not affected: <em>Cardio</em> (overrides with a tableone-only CSV + kable version), main <em>Terlipressin</em> <code>Tables.Rmd</code> / <code>docs/data_summary.qmd</code> (tableone only)</td>
-<td style="text-align: left;"><code>pvalue()</code> redefined in the setup chunk to drop the <code>overall</code> element, then <code>assign()</code>ed into the global env (knitr chunks run in a child env, so a plain redefinition is not seen by <code>create_table_one</code>). HTML now matches CSV</td>
+<td style="text-align: left;"><strong>Not used.</strong> This project overrides <code>create_table_one()</code> with the original tableone-only version (<code>CreateTableOne()</code> → <code>print()</code> → <code>write.csv()</code>) and shows that same printed matrix on the page with <code>knitr::kable()</code>, so the web table <em>is</em> the CSV. (Upstream one-line fix if the table1 path is kept: <code>x &lt;- x[tolower(names(x)) != "overall"]</code> at the top of <code>pvalue()</code>, or <code>overall = FALSE</code> as in the table1 vignette.)</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;"><strong>S2</strong></td>
