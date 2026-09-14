@@ -1,0 +1,34 @@
+# OS
+.DS_Store
+
+# Office lock files
+~$*
+
+# R
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj
+
+# Quarto
+docs/.quarto/
+docs/_site/
+docs/*_files/
+*_cache/
+*.knit.md
+**/*.quarto_ipynb
+
+# RPubs publishing records (legacy)
+rsconnect/
+
+# Patient-level data must never be committed — loaded by absolute path from
+# the main project / Partners Dropbox at render time.
+data/
+*.xlsx
+
+# purl() artifact of the shared pipeline
+shared_pipeline.R
+docs/shared_pipeline.R
+
+# Local tooling
+.claude/

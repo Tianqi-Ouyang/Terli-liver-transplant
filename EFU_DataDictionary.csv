@@ -1,0 +1,59 @@
+Variable / Field Name,Variable Category,Form Name,Section Header,Field Type,Field Label,"Choices, Calculations, OR Slider Labels",Field Note,Text Validation Type OR Show Slider Number,Text Validation Min,Text Validation Max,Identifier?,Branching Logic (Show field only if...),Required Field?,Custom Alignment,Question Number (surveys only),Matrix Group Name,Matrix Ranking?,Field Annotation
+codestatus,Categorical,extend_followup,,dropdown,Code Status at time of Terlipressin Treatment,"0, DNR | 1, Full Code",,,,,,,,,,,,
+daydischarge_4,Numerical,extend_followup,,text,1 Year Post index Hospitalization:,,,date_mdy,,,y,,,,,,,"@CALCDATE([dc_date], 1, 'y')"
+efu_readmit,Categorical,extend_followup,,yesno,Was this patient readmitted within 1 year following index hospitalization?,,,,,,,,,,,,,
+efu_readmitdate,Not used,extend_followup,,text,Date of first hospital readmission,,,date_mdy,,,,[efu_readmit] = '1',,,,,,
+efu_daysreadmit,Numerical,extend_followup,,calc,Days from admission to first readmission,"rounddown((datediff([admit_date],[efu_readmitdate],""d"",""mdy"",true)),1)",,,,,,[efu_readmit] = '1',,,,,,
+efu_readmit_cirrhosiscomp,Categorical,extend_followup,,yesno,"Was the readmission related to cirrhosis (ascites, HE, infection, bleeding, etc.)?",,,,,,,[efu_readmit] = '1',,,,,,
+efu_readmitaki,Categorical,extend_followup,,yesno,Was the readmission related to an Acute Kidney Injury ?,,,,,,,[efu_readmit] = '1',,,,,,
+efu_readmitscr,Numerical,extend_followup,,text,Serum Creatinine at time of readmission:,,mg/dL,,,,,[efu_readmit] = '1',,,,,,
+efu_status,Categorical,extend_followup,,yesno,Is the subject alive?,,At the time of data entry,,,,,,,,,,,
+efu_lastencounter,Not used,extend_followup,,text,Date of Last Follow-up,,,date_mdy,,,y,[efu_status] = '1',,,,,,
+efu_dayslastencounter,Numerical,extend_followup,,calc,Days from admission to last follow-up,"rounddown((datediff([admit_date],[efu_lastencounter],""d"",""mdy"")),1)",,,,,,[efu_status] = '1',,,,,,
+efu_dod,Not used,extend_followup,,text,Date of Death,,,date_mdy,,,y,[efu_status] = '0',,,,,,
+efu_daysdod,Numerical,extend_followup,,calc,Days from Admission to Death,"rounddown((datediff([admit_date],[efu_dod],""d"",""mdy"")),1)",,,,,,[efu_status] = '0',,,,,,
+efu_rrt,Categorical,extend_followup,,yesno,Was Renal Replacement Therapy (RRT) initiated after index discharge?,,iHD or CRRT,,,,,,,,,,,
+efu_rrtstartdate,Not used,extend_followup,,text,Date of RRT initiation,,,date_mdy,,,y,[efu_rrt]  = '1',,,,,,
+efu_daysrrtstart,Numerical,extend_followup,,calc,Days from admission to RRT initiation,"rounddown((datediff([admit_date],[efu_rrtstartdate],""d"",""mdy"")),1)",,,,,,[efu_rrt]  = '1',,,,,,
+efu_listingstatus,Categorical,extend_followup,,yesno,Was this patient listed for Liver Transplant at any point?,,,,,,,,,,,,,
+efu_listingdate,Not used,extend_followup,,text,Date of Listing,,,date_mdy,,,y,[efu_listingstatus] = '1',,,,,,
+efu_dayslisting,Numerical,extend_followup,,calc,Days from Admission to Listing,"rounddown((datediff([admit_date],[efu_listingdate],""d"",""mdy"",true)),1)",,,,,,[efu_listingstatus] = '1',,,,,,
+efu_listing,Categorical,extend_followup,,radio,Current Listing Status,"0, Not Listed | 1, Listed or Transplanted",,,,,,,,,,,,
+efu_wlremovaldate,Not used,extend_followup,,text,Date of Waitlist Removal,,,date_mdy,,,y,[efu_listing] = '0' and [efu_listingstatus] = '1',,,,,,
+efu_dayswlremoval,Numerical,extend_followup,,calc,Days from Admission to Waitlist Removal ,"rounddown((datediff([admit_date],[efu_wlremovaldate],""d"",""mdy"",true)),1)",,,,,,[efu_listing] = '0' and [efu_listingstatus] = '1',,,,,,
+efu_lt,Categorical,extend_followup,,yesno,Did the patient receive a Liver Transplant? ,,,,,,,,y,,,,,
+efu_ltdate,Not Used,extend_followup,,text,Date of Transplant,,,date_mdy,,,y,[efu_lt] = '1',,,,,,
+efu_dayslt,Numerical,extend_followup,,calc,Days from Admission to Transplant,"rounddown((datediff([admit_date],[efu_ltdate],""d"",""mdy"")),1)",,,,,,[efu_lt] = '1',,,,,,
+efu_slkt,Categorical,extend_followup,,yesno,Did the patient receive a SLKT? ,,,,,,,[efu_lt] = '1',,,,,,SLKT: Simultaneous Liver-Kidney Transplantation
+efu_kal,Categorical,extend_followup,,yesno,Did patient receive a Kidney transplant after LT ?,,KAL,,,,,[efu_lt] = '1' or [slkt_during_hospital] = '1' or [lt_during_hospital] = '1' or [dc_lt_90days] = '1' or [dc_lt_90days] = '2' or [lt_status_1yr] = '1',,,,,,
+efu_kaldate,Not Used,extend_followup,,text,Date of Kidney Transplant,,,date_mdy,,,y,[efu_kal] = '1',,,,,,
+efu_dayskal,Numerical,extend_followup,,calc,Days from Admission to Kidney Transplant,"rounddown((datediff([admit_date],[efu_kaldate],""d"",""mdy"")),1)",,,,,,[efu_kal] = '1',,,,,,
+efu_ltrrt,Categorical,extend_followup,,yesno,Did the patient require RRT after Liver Transplant? ,,,,,,,[efu_lt] = '1',,,,,,iHD or cRRT
+efu_ltdirections,Not Used,extend_followup,,descriptive,"<div class=""rich-text-field-label""><p style=""text-align: center;"">Labs at Liver Transplant</p> <p style=""text-align: center;""><span style=""font-weight: normal;"">Enter values closest to the time of Transplant</span></p> <p style=""text-align: center;""><span style=""font-weight: normal;"">(Window: -7 to 0 days before transplant)</span></p></div>",,,,,,,[efu_lt] = '1',,,,,,
+efu_ltdate2,Not Used,extend_followup,,text,Date of Liver Transplant,,,date_mdy,,,y,[efu_lt] = '1',,,,,,"@CALCDATE([efu_ltdate], 0, 'd')"
+efu_ltna,Numerical,extend_followup,,text,Serum Na,,,,,,,[efu_lt] = '1',,,,,,
+efu_lttbili,Numerical,extend_followup,,text,Total Bilirubin ,,,,,,,[efu_lt] = '1',,,,,,
+efu_ltscr,Numerical,extend_followup,,text,Serum Creatinine,,,,,,,[efu_lt] = '1',,,,,,
+efu_lt_albumin,Numerical,extend_followup,,text,Serum Albumin,,,,,,,[efu_lt] = '1',,,,,,
+efu_lt_inr,Numerical,extend_followup,,text,INR,,,,,,,[efu_lt] = '1',,,,,,
+terlidate,Not Used,extend_followup,"<div class=""rich-text-field-label""><p style=""text-align: center;"">90 Day Follow-Up</p> <p style=""text-align: center;""><span style=""font-weight: normal;"">The window for all fields in this section is ± 30 days from the projected date</span></p></div>",text,90 Days Post Terlipressin Treatment:,,,date_mdy,,,y,,,,,,,"@CALCDATE([terli_date_day0], 90, 'd')"
+efu_90_scr,Numerical,extend_followup,,text,Serum Creatinine 90 post Terlipressin Treatment (±30 days),,mg/dL,,,,,,,,,,,90-days post discharge
+efu_90_rrt,Categorical,extend_followup,,yesno,Is the patient receiving RRT 90 days (±30)  post-terlipressin treatment?,,,,,,,,,,,,,
+efu_90_readmit,Numerical,extend_followup,,text,Number of hospital readmissions within 90-days of terlipressin treatment:,,,,,,,,,,,,,
+efu_ltdate3,Not Used,extend_followup,,text,90 Days after Date of Liver Transplant:,,,date_mdy,,,y,[efu_lt] = '1',,,,,,"@CALCDATE([efu_ltdate], 90, 'd')"
+efu_90lt_scr,Numerical,extend_followup,,text,Serum Creatinine 90 days post-transplant (±30 days),,,,,,,[efu_lt] = '1',,,,,,
+efu_90lt_rrt,Categorical,extend_followup,,yesno,Is the patient receiving RRT 90 days (±30) post-transplant?,,,,,,,[efu_lt] = '1',,,,,,
+terlidate_2,Not Used,extend_followup,"<div class=""rich-text-field-label""><p style=""text-align: center;"">180 Day Follow-Up</p> <p style=""text-align: center;""><span style=""font-weight: normal;"">The window for all fields in this section is ± 60 days from the projected date</span></p></div>",text,180 Days Post Terlipressin Treatment:,,,date_mdy,,,y,,,,,,,"@CALCDATE([terli_date_day0], 180, 'd')"
+efu_180_scr,Numerical,extend_followup,,text,Serum Creatinine 180 post terlipressin treatment  (± 60 days),,mg/dL,,,,,,,,,,,90-days post discharge
+efu_180_rrt,Categorical,extend_followup,,yesno,Is the patient receiving RRT 180 days (±60) post-terlipressin treatment?,,,,,,,,,,,,,
+efu_180_readmit,Numerical,extend_followup,,text,Number of hospital readmission within 180 days of terlipressin treatment,,,,,,,,,,,,,
+efu_ltdate4,Not Used,extend_followup,,text,180 Days after Date of Liver Transplant:,,,date_mdy,,,y,[efu_lt] = '1',,,,,,"@CALCDATE([efu_ltdate], 180, 'd')"
+efu_180lt_scr,Numerical,extend_followup,,text,Serum Creatinine 180 days post-transplant (± 60 days),,,,,,,[efu_lt] = '1',,,,,,
+efu_180lt_rrt,Categorical,extend_followup,,yesno,Is the patient receiving RRT 180 days (±60) post-transplant?,,,,,,,[efu_lt] = '1',,,,,,
+daydischarge_3,Not Used,extend_followup,"<div class=""rich-text-field-label""><p style=""text-align: center;"">1 Year Follow-Up<br><br><span style=""font-weight: normal;"">The window for all fields in this section is ± 90 days from the projected date</span></p></div>",text,1 Year Post Terlipressin Treatment:,,,date_mdy,,,y,,,,,,,"@CALCDATE([terli_date_day0], 1, 'y')"
+efu_1yr_scr,Numerical,extend_followup,,text,Serum Creatinine 1-year post terlipressin treatment  (± 90 days):,,,,,,,,,,,,,90-days post discharge
+efu_1yr_rrt,Categorical ,extend_followup,,yesno,Is the patient receiving RRT 1 year (±90 days) post-terlipressin treatment?,,,,,,,,,,,,,
+efu_1yr_readmit,Numerical,extend_followup,,text,Number of hospital readmission within 1 year of terlipressin treatment:,,,,,,,,,,,,,
+efu_ltdate5,Not Used,extend_followup,,text,1 Year Post Liver Transplant:,,,date_mdy,,,y,[efu_lt] = '1',,,,,,"@CALCDATE([efu_ltdate], 1, 'y')"
+efu_1yrlt_scr,Numerical,extend_followup,,text,Serum Creatinine 1-year post-transplant (± 90 days),,,,,,,[efu_lt] = '1',,,,,,
+efu_1yrlt_rrt,Categorical,extend_followup,,yesno,Is the patient receiving RRT 1 year (±90 days) post-transplant?,,,,,,,[efu_lt] = '1',,,,,,

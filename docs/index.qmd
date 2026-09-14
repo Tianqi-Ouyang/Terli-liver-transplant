@@ -1,0 +1,59 @@
+---
+title: "Liver Transplant — Project Summary"
+author: "Tianqi Ouyang"
+date: last-modified
+---
+
+## Overview
+
+The **Liver Transplant** sub-project of the [HARMONY Terlipressin Registry](../../Terlipressin/docs/) describes transplant listing, liver transplantation, renal replacement therapy, readmission and survival through **1 year** in HRS-AKI patients treated with terlipressin, using the sites' **Extended Follow-Up (EFU)** REDCap form.
+
+## Cohort
+
+- **Master cohort** — the locked `final_master_01282026.xlsx` (n = 243), loaded through the shared pipeline with every standard derived variable.
+- **EFU cohort** — master patients with an EFU record in the 13 site CSVs under `Extended Data Collection/Finalized Files/09SEP2026/` (222 rows; 221 join to the master — one CCF row is not a master patient, and the 22 CSF patients have no EFU file). All three tables use this cohort.
+
+## Outputs
+
+| # | Output | Cohort | Stratifier | Rows |
+|:--|:-----|:-------|:-----------|:-----|
+| 1 | Demographics Table 1 | EFU cohort | `efu_listingstatus` | age, sex, race, etiology, prior complications, prior AKI, midodrine / octreotide, pressors, MELD 3.0 (admission, day 0), baseline / admission labs, `map_day0_avg`, ACLF grade, CLIF-C, ICU, extended criteria 1–4, terlipressin route, duration, albumin before / during therapy, HRS response |
+| 2 | EFU summary | EFU cohort | `listed_transplant` (index hospitalization) | all 40 EFU outcome fields |
+| 3 | EFU summary | EFU cohort | `efu_listingstatus` (any time ≤ 1 yr) | same, minus the stratifier |
+
+Plus a join-QC table, a cross-tabulation of the two listing definitions, and a review of errors found in the legacy `Code/*.Rmd` scripts.
+
+## Project-specific derived variables
+
+| Variable | Definition |
+|:---------|:-----------|
+| `id_key` | Normalized study ID (`UPPERCASE-PREFIX-integer`, `YAL` → `YALE`) used to join EFU files to the master |
+| `map_day0_avg` | Mean of `map_terli_day0_time0`–`time3` after recoding `0` (not measured) to `NA` |
+| `efu_*` | EFU form fields (see *EFU Variables*); yes/no as 0/1, labs parsed with `parse_number()` |
+
+## Pipeline
+
+```{mermaid}
+flowchart TD
+    A[final_master_01282026.xlsx<br/>n = 243] --> B[Source shared_pipeline.qmd]
+    C[13 site EFU CSVs<br/>09SEP2026, 222 rows] --> D[Normalize study IDs]
+    B --> E[inner_join on id_key<br/>EFU cohort n = 221]
+    D --> E
+    E --> F[map_day0_avg, numeric coercions]
+    F --> G[Table 1 — demographics<br/>by efu_listingstatus]
+    F --> H[Table 2 — EFU outcomes<br/>by listed_transplant]
+    F --> I[Table 3 — EFU outcomes<br/>by efu_listingstatus]
+```
+
+## Repository Structure
+
+| Path | Description |
+|:-----|:-----------|
+| `docs/analysis.qmd` | Canonical analysis — sources the shared pipeline, imports EFU data, renders Tables 1–3 |
+| `docs/efu_variables.qmd` | EFU REDCap data dictionary, rendered |
+| `docs/tables/` | CSV versions of the tables |
+| `EFU_DataDictionary.csv` | REDCap data dictionary export for the EFU form |
+| `Code/liver request 11122025.Rmd` | Legacy analyst script (Nov 2025; published to [RPubs](https://rpubs.com/Touyang/1367784)) — superseded |
+| `Code/liver-transplant-0922.Rmd`, `Code/liver transplant 0922.Rmd` | Earlier analyst scripts (Sep–Oct 2025) — superseded |
+| `Requests/` | Original analysis request documents |
+| `Results/` | Legacy CSV / HTML outputs from the `.Rmd` scripts |

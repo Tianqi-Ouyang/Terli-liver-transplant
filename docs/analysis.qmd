@@ -1,0 +1,353 @@
+---
+title: "Liver Transplant — Analysis"
+author: "Tianqi Ouyang"
+date: last-modified
+format:
+  html:
+    echo: true
+    code-fold: true
+    toc: true
+    toc-depth: 3
+---
+
+# Scope
+
+Extended follow-up (EFU) of the HARMONY terlipressin cohort. The analytic
+cohort is every patient in the locked master dataset
+(`final_master_01282026.xlsx`, n = 243) who has an EFU record in the
+site-submitted files under
+`Extended Data Collection/Finalized Files/09SEP2026/` (13 site CSVs,
+222 rows).
+
+| Table | Cohort | Column (stratifier) | Rows |
+|:--|:--|:--|:--|
+| 1 — Demographics | EFU patients | `efu_listingstatus` (listed for LT at any point) | Baseline demographics, prior complications, admission / day-0 labs & scores, treatment characteristics, HRS response |
+| 2 — EFU summary | EFU patients | `listed_transplant` (index-hospitalization listing, shared pipeline) | All EFU outcome fields |
+| 3 — EFU summary | EFU patients | `efu_listingstatus` | All EFU outcome fields except the stratifier |
+
+# Legacy Code Review — Errors Found
+
+The previous analyses in `Code/*.Rmd` were reviewed before this file was
+written. The following problems were found; none of them are carried
+forward here.
+
+| # | File | Error | Consequence | Handling here |
+|:--|:--|:--|:--|:--|
+| 1 | `liver-transplant-0922.Rmd` | `rrt_90days = ifelse(is.na(days_to_rrt) & days_to_rrt <= 90, 1, 0)` — `is.na(x) & x <= 90` can never be `TRUE` | `rrt_90days` was never 1. Same bug in `lt_90days`, which additionally compared `days_to_rrt` instead of `days_to_lt` | Fixed in the later `liver request 11122025.Rmd`; not needed here (EFU has its own RRT / LT fields) |
+| 2 | `liver-transplant-0922.Rmd` | `albvolume_before_terli` listed in `num_vars` but not in `all_vars` | Silently dropped from every Table 1 | Included in `all_vars` |
+| 3 | `liver-transplant-0922.Rmd` | "Table 4" chunk is an exact duplicate of "Table 3" (same strata, same output path) | Same CSV written twice | Removed |
+| 4 | `liver request 11122025.Rmd` | `mutate(ifelse(is.na(refascites_previous_comp), 0, refascites_previous_comp))` has no `name =` | Creates a column literally named `ifelse(...)`; the intended NA → 0 recode never reached `refascites_previous_comp`, so the logistic model silently dropped those rows | Not applicable here (no recode requested); flagged |
+| 5 | both `.Rmd` | `alb_terli_discont_day` was built from the `alb_terli_dayN` fields, which are **serum albumin (g/dL)**, not albumin *given* | The "albumin during therapy" row in the old Table 1 was a lab value, not a dose | Albumin given is `albumintotal_terli_dayN` (grams/day); the shared pipeline sums days 0–13 into `total_albumin`, used here for the requested `albumintotal_terli_dayX` row. No albumin is recorded after `Discont_Day`, so the sum equals "total albumin during therapy" |
+| 6 | both `.Rmd` | Read the superseded `/Users/to909/Desktop/Terlipressin/final_master_0508.xlsx` | Predates the cleaned master | Shared pipeline → `final_master_01282026.xlsx` |
+| 7 | shared pipeline | The master xlsx already contains `mean_map_day0`; the pipeline merges a second copy, producing `mean_map_day0.x` / `.y` (no `mean_map_day0` column) | Any sub-project referencing `mean_map_day0` / `map_day0` silently loses that row from its Table 1 | `map_day0_avg` is computed explicitly in this file |
+| 8 | master data | `map_terli_day0_time0..3` contain `0` values (25 / 4 / 2 / 2 readings) — placeholders for "not measured", not real pressures | Averaging them in biases the day-0 MAP downward | `0` → `NA` before averaging (same convention as the Xing sub-project) |
+| 9 | EFU data | Yale IDs are `YAL-00N` in the EFU file but `Yale-N` in the master | All 5 Yale patients failed to join | Join on a normalized key: upper-case prefix (`YAL` → `YALE`) + integer number |
+| 10 | EFU data | One CCF row (site file has 41 rows; master has 40 CCF patients) has an ID that is not in the master at all | 222 EFU rows → **221** analyzable patients | Reported below; cohort n is computed, not hard-coded |
+| 11 | EFU data | No CSF file was submitted | The 22 CSF patients in the master have no EFU data | Reported below |
+| 12 | EFU data | One `efu_lttbili` value is a below-detection string (`<x.x`) | `as.numeric()` → `NA` | Parsed with `readr::parse_number()` (uses the limit value) |
+| 13 | shared pipeline | `create_table_one()` renders the HTML table with `overall = "Overall"`, and `table1` passes that Overall column into the `pvalue()` helper as a **third group** | Every HTML p-value is computed on (group 0, group 1, Overall) — e.g. `sex_male` p = 0.239 instead of 0.121 — and 2-group continuous variables get a Kruskal-Wallis instead of Mann-Whitney. The tableone CSVs are unaffected | `pvalue()` is redefined below to drop the `overall` element before testing, so the HTML and CSV p-values agree |
+
+```{r setup}
+#| include: false
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+
+library(tidyverse)
+library(readxl)
+library(tableone)
+library(table1)
+library(htmltools)
+
+# Load `master` (n = 243) and the shared helpers. `output = tempfile()` keeps
+# the purl()ed script out of the working directory.
+source(knitr::purl(
+  "/Users/to909/Desktop/Terlipressin projects/Terlipressin/code/shared_pipeline.qmd",
+  output = tempfile(fileext = ".R"),
+  quiet  = TRUE
+))
+
+# --- Fix for shared-pipeline bug #13 -----------------------------------------
+# table1::table1(..., overall = "Overall", extra.col = list("P-value" = pvalue))
+# passes the Overall column into `pvalue()` as an extra stratum. Drop it so
+# the test compares only the real strata (matches the tableone CSV).
+pvalue <- function(x, ...) {
+  x <- x[tolower(names(x)) != "overall"]
+  y <- unlist(x)
+  g <- factor(rep(1:length(x), times = sapply(x, length)))
+  if (is.numeric(y)) {
+    n_groups <- nlevels(droplevels(g))
+    if (n_groups == 2) {
+      p <- tryCatch(wilcox.test(y ~ g)$p.value, error = function(e) NA)
+      test_used <<- c(test_used, "wilcox")
+    } else {
+      p <- tryCatch(kruskal.test(y ~ g)$p.value, error = function(e) NA)
+      test_used <<- c(test_used, "kruskal")
+    }
+  } else {
+    tbl <- table(y, g)
+    if (nrow(tbl) < 2 || ncol(tbl) < 2) {
+      p <- NA
+      test_used <<- c(test_used, "none")
+    } else if (any(tbl < 5)) {
+      p <- tryCatch(fisher.test(tbl)$p.value, error = function(e) NA)
+      test_used <<- c(test_used, "fisher")
+    } else {
+      p <- tryCatch(chisq.test(tbl)$p.value, error = function(e) NA)
+      test_used <<- c(test_used, "chisq")
+    }
+  }
+  pval <- if (is.na(p)) "" else sub("<", "&lt;", format.pval(p, digits = 3, eps = 0.001))
+  c("", pval)
+}
+# `source()` defined the pipeline functions in the global environment, and
+# knitr evaluates this chunk in a child environment, so `create_table_one()`
+# would still find the pipeline's `pvalue`. Install the fixed version there.
+assign("pvalue", pvalue, envir = globalenv())
+
+dir.create("tables", showWarnings = FALSE)
+```
+
+# EFU Data Import
+
+Each site returned one CSV. All files share the same 42 columns
+(`subjectid` + 41 EFU fields; see the *EFU Variables* page). The files
+contain no dates — only REDCap-calculated day counts from the index
+admission — so nothing patient-identifying is loaded beyond the study ID
+used for the join.
+
+```{r efu-import}
+#| code-summary: "Show EFU import and ID normalization"
+efu_dir <- "/Users/to909/Partners HealthCare Dropbox/Tianqi Ouyang/Extended Data Collection/Finalized Files/09SEP2026"
+
+# Study IDs differ in formatting between REDCap exports (e.g. `YAL-003` in the
+# EFU file vs `Yale-3` in the master). Normalize both sides to
+# `<UPPERCASE PREFIX>-<integer>` before joining.
+norm_id <- function(x) {
+  x      <- str_trim(x)
+  prefix <- toupper(str_extract(x, "^[A-Za-z]+"))
+  prefix <- if_else(prefix == "YAL", "YALE", prefix)
+  number <- as.integer(str_extract(x, "[0-9]+$"))
+  paste0(prefix, "-", number)
+}
+
+# Field types from the EFU data dictionary
+efu_yesno <- c(
+  "codestatus", "efu_readmit", "efu_readmit_cirrhosiscomp", "efu_readmitaki",
+  "efu_status", "efu_rrt", "efu_listingstatus", "efu_listing", "efu_lt",
+  "efu_slkt", "efu_kal", "efu_ltrrt", "efu_90_rrt", "efu_90lt_rrt",
+  "efu_180_rrt", "efu_180lt_rrt", "efu_1yr_rrt", "efu_1yrlt_rrt"
+)
+efu_numeric <- c(
+  "efu_daysreadmit", "efu_readmitscr", "efu_dayslastencounter", "efu_daysdod",
+  "efu_daysrrtstart", "efu_dayslisting", "efu_dayswlremoval", "efu_dayslt",
+  "efu_dayskal", "efu_ltna", "efu_lttbili", "efu_ltscr", "efu_lt_albumin",
+  "efu_lt_inr", "efu_90_scr", "efu_90_readmit", "efu_90lt_scr", "efu_180_scr",
+  "efu_180_readmit", "efu_180lt_scr", "efu_1yr_scr", "efu_1yr_readmit",
+  "efu_1yrlt_scr"
+)
+
+efu_raw <- list.files(efu_dir, pattern = "_09092026\\.csv$", full.names = TRUE) %>%
+  set_names(~ str_remove(basename(.x), "_09092026\\.csv$")) %>%
+  map_dfr(
+    ~ read_csv(.x, col_types = cols(.default = col_character()), show_col_types = FALSE),
+    .id = "efu_center"
+  ) %>%
+  mutate(
+    id_key = norm_id(subjectid),
+    across(all_of(efu_yesno), as.integer),
+    # parse_number() keeps below-detection strings such as "<0.2" (-> 0.2)
+    across(all_of(efu_numeric), readr::parse_number)
+  ) %>%
+  select(-subjectid)
+
+master <- master %>% mutate(id_key = norm_id(subjectid))
+
+efu_cohort <- master %>%
+  inner_join(efu_raw, by = "id_key")
+```
+
+## Join QC
+
+```{r efu-qc}
+#| code-summary: "Show join QC"
+qc <- tibble(
+  check = c(
+    "EFU rows (all site files)",
+    "EFU rows matched to master",
+    "EFU rows NOT in master",
+    "Master patients (n)",
+    "Master patients without EFU data",
+    "Analytic cohort (EFU patients)"
+  ),
+  n = c(
+    nrow(efu_raw),
+    sum(efu_raw$id_key %in% master$id_key),
+    sum(!efu_raw$id_key %in% master$id_key),
+    nrow(master),
+    sum(!master$id_key %in% efu_raw$id_key),
+    nrow(efu_cohort)
+  )
+)
+knitr::kable(qc, caption = "EFU vs master join")
+```
+
+```{r efu-qc-sites}
+#| code-summary: "Show per-site join status"
+bind_rows(
+  efu_raw %>%
+    mutate(status = if_else(id_key %in% master$id_key, "matched", "not in master")) %>%
+    count(site_file = efu_center, status),
+  master %>%
+    filter(!id_key %in% efu_raw$id_key) %>%
+    mutate(site_file = "(no EFU file)", status = "master only") %>%
+    count(site_file, status)
+) %>%
+  pivot_wider(names_from = status, values_from = n, values_fill = 0) %>%
+  knitr::kable(caption = "Rows per site file by join status (MCX = Mayo + MCM)")
+```
+
+# Derived Variables
+
+```{r derived}
+#| code-summary: "Show derived variables"
+t1_numeric <- c(
+  "age", "admit_meld_3", "day0_meld_3", "baseline_scr_new", "baseline_scr",
+  "tbili_admit", "inr_admit", "sodium_admit", "albumin_admit", "map_day0_avg",
+  "aclf_grade", "clif_c_score", "Discont_Day", "total_albumin",
+  "totalalbumin_before_terli", "albvolume_before_terli"
+)
+
+efu_cohort <- efu_cohort %>%
+  mutate(
+    # Average of the four day-0 MAP readings. A recorded 0 mmHg is a
+    # "not measured" placeholder, so it is set to NA before averaging.
+    across(
+      c(map_terli_day0_time0, map_terli_day0_time1,
+        map_terli_day0_time2, map_terli_day0_time3),
+      ~ na_if(as.numeric(.x), 0)
+    ),
+    map_day0_avg = rowMeans(
+      across(c(map_terli_day0_time0, map_terli_day0_time1,
+               map_terli_day0_time2, map_terli_day0_time3)),
+      na.rm = TRUE
+    ),
+    map_day0_avg = if_else(is.nan(map_day0_avg), NA_real_, map_day0_avg),
+    across(all_of(t1_numeric), as.numeric)
+  )
+
+tibble(
+  `map_day0_avg` = c("non-missing", "readings used per patient (median)"),
+  value = c(
+    sum(!is.na(efu_cohort$map_day0_avg)),
+    median(rowSums(!is.na(efu_cohort[, paste0("map_terli_day0_time", 0:3)])))
+  )
+) %>% knitr::kable()
+```
+
+## Listing status: index hospitalization vs EFU
+
+`listed_transplant` (shared pipeline: `lt_eval == 2 | lteval_listingstatus == 1`)
+captures listing during the index hospitalization; `efu_listingstatus`
+captures listing at any point through 1 year.
+
+```{r listing-crosstab}
+#| code-summary: "Show cross-tabulation"
+with(efu_cohort,
+     table(listed_transplant = listed_transplant,
+           efu_listingstatus = efu_listingstatus, useNA = "ifany")) %>%
+  knitr::kable(caption = "Rows: listed_transplant; columns: efu_listingstatus (NA = missing)")
+```
+
+# Table 1 — Demographics by `efu_listingstatus`
+
+Cohort: EFU patients with a non-missing `efu_listingstatus`. Continuous
+variables are median [Q1, Q3] (Mann-Whitney U); categorical are n (%)
+(chi-squared, or Fisher's exact when any cell < 5).
+
+```{r table1}
+#| code-summary: "Show Table 1 code"
+t1_all_vars <- c(
+  "age", "sex_male", "race", "cirrhosis_etiology",
+  "he_previous_comp", "ascites_previous_comp", "refascites_previous_comp",
+  "sbp_previous_comp", "nonsbp_previous_comp", "phtn_bleed_previous_comp",
+  "hcc_previous_comp", "tips_previous_comp", "aki_previous_90days",
+  "mido_preadmission", "oct_before_terli", "pressors_aki",
+  "admit_meld_3", "day0_meld_3", "baseline_scr_new", "baseline_scr",
+  "tbili_admit", "inr_admit", "sodium_admit", "albumin_admit",
+  "map_day0_avg",
+  "aclf_grade", "clif_c_score", "icu_admit",
+  "criteria_1", "criteria_2", "criteria_3", "criteria_4",
+  "terli_route_day0", "Discont_Day", "total_albumin",
+  "albumin_before_terli", "totalalbumin_before_terli", "albvolume_before_terli",
+  "hrs_responders", "hrs_responders_cat_2"
+)
+t1_cat_vars <- setdiff(t1_all_vars, t1_numeric)
+
+t1_data <- efu_cohort %>% filter(!is.na(efu_listingstatus))
+
+create_table_one(
+  all_vars = t1_all_vars,
+  cat_vars = t1_cat_vars,
+  data     = t1_data,
+  strata   = "efu_listingstatus",
+  output   = "tables/table1_demographics_efu_listingstatus.csv"
+)
+```
+
+[📥 Download CSV — Table 1](tables/table1_demographics_efu_listingstatus.csv)
+
+# Table 2 — EFU Summary by `listed_transplant`
+
+Cohort: all EFU patients. `efu_days*` fields are days from **index admission**.
+
+```{r table2}
+#| code-summary: "Show Table 2 code"
+efu_vars <- c(
+  "efu_readmit", "efu_daysreadmit", "efu_readmit_cirrhosiscomp", "efu_readmitaki",
+  "efu_readmitscr", "efu_status", "efu_dayslastencounter", "efu_daysdod",
+  "efu_rrt", "efu_daysrrtstart", "efu_listingstatus", "efu_dayslisting",
+  "efu_listing", "efu_dayswlremoval", "efu_lt", "efu_dayslt", "efu_slkt",
+  "efu_kal", "efu_dayskal", "efu_ltrrt", "efu_ltna", "efu_lttbili", "efu_ltscr",
+  "efu_lt_albumin", "efu_lt_inr", "efu_90_scr", "efu_90_rrt", "efu_90_readmit",
+  "efu_90lt_scr", "efu_90lt_rrt", "efu_180_scr", "efu_180_rrt", "efu_180_readmit",
+  "efu_180lt_scr", "efu_180lt_rrt", "efu_1yr_scr", "efu_1yr_rrt", "efu_1yr_readmit",
+  "efu_1yrlt_scr", "efu_1yrlt_rrt"
+)
+efu_cat_vars <- intersect(efu_vars, efu_yesno)
+
+create_table_one(
+  all_vars = efu_vars,
+  cat_vars = efu_cat_vars,
+  data     = efu_cohort,
+  strata   = "listed_transplant",
+  output   = "tables/table2_efu_listed_transplant.csv"
+)
+```
+
+[📥 Download CSV — Table 2](tables/table2_efu_listed_transplant.csv)
+
+# Table 3 — EFU Summary by `efu_listingstatus`
+
+Cohort: EFU patients with a non-missing `efu_listingstatus`. Same rows as
+Table 2 minus the stratifier.
+
+```{r table3}
+#| code-summary: "Show Table 3 code"
+t3_vars <- setdiff(efu_vars, "efu_listingstatus")
+
+create_table_one(
+  all_vars = t3_vars,
+  cat_vars = intersect(t3_vars, efu_yesno),
+  data     = t1_data,
+  strata   = "efu_listingstatus",
+  output   = "tables/table3_efu_efu_listingstatus.csv"
+)
+```
+
+[📥 Download CSV — Table 3](tables/table3_efu_efu_listingstatus.csv)
+
+# Session Info
+
+```{r session-info}
+#| code-summary: "Show session info"
+sessionInfo()
+```

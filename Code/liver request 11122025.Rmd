@@ -1,0 +1,258 @@
+---
+title: "liver transplant request 11122025"
+output: html_document
+date: "2025-11-12"
+---
+
+```{r,include=FALSE}
+library(tidyverse)
+library(tableone)
+library(writexl)
+library(gtsummary)
+library(survival)
+library(ggplot2)
+library(readxl)
+library(ggpubr)
+library(splines)
+library(xlsx)
+library(lattice)
+library(mice)
+library(DescTools)
+library(survminer)
+library(finalfit)
+library(tidycmprsk)
+library(ggsurvfit) 
+library(sqldf)
+library(table1)
+library(cobalt)
+library(MatchIt)
+
+
+
+final_master <- read_xlsx("/Users/to909/Desktop/Terlipressin/final_master_0508.xlsx")
+
+final_master <- final_master %>%
+  mutate(across(everything(), ~{
+    x_char <- as.character(.x)
+    if (all(grepl("^[-+]?[0-9]*\\.?[0-9]+$", x_char[!is.na(x_char)]))) {
+      as.numeric(x_char)
+    } else {
+      .x  # leave unchanged
+    }
+  }))
+
+final_master <- final_master %>%
+  mutate(
+    BMI = aki_weight / (aki_height/100)^2,
+    rrt_90days=ifelse(is.na(days_to_rrt),0,ifelse(days_to_rrt<=90,1,0)),
+    lt_90days=ifelse(is.na(time_to_transplant),0,ifelse(time_to_transplant<=90,1,0)),
+   rrt_status=case_when((days_to_rrt -  time_to_transplant) == 0 ~ 0,
+                         (days_to_rrt -  time_to_transplant) < 0 ~ 1,
+                         (days_to_rrt -  time_to_transplant) > 0 ~ 2))
+  
+
+
+```
+
+
+
+```{r,include=FALSE}
+
+# create scr_day
+map_days <- grep("^map_terli_day", str_sort(names(final_master)), value = TRUE)
+map_day0 <- final_master %>% 
+  select(subjectid,contains("map_terli_day0_time"))
+
+df_map_day0 <- map_day0 %>%  
+  pivot_longer(
+    cols = starts_with("map_terli_day"), 
+    names_to = c("temp", "day", "time"),    # we will capture these parts
+    names_pattern = "^(map_terli)_day(\\d+)_time(\\d+)$", # regex to split
+    values_to = "map"
+  ) %>%
+  # 2) Convert day/time to numeric so we can sort properly
+  mutate(
+    day = as.numeric(day),
+    time = as.numeric(time)
+  ) %>%
+  select(-temp)  # 'temp' is just the literal "map_terli", can drop if not needed
+
+final_map_day0 <- df_map_day0 %>% 
+  group_by(subjectid, day) %>% 
+   summarise(map_day0=mean(map,na.rm=T)) %>% select(subjectid,map_day0) %>% ungroup()
+
+```
+
+```{r,include=FALSE}
+
+# data: a data.frame (e.g., final_master)
+# prefix: the column-name prefix before the day number (e.g., "scr_terli_day")
+# new_var_name: name of the new column to create (e.g., "scr_terli_discont_day")
+add_by_discont_day <- function(data, prefix, new_var_name) {
+  if (!is.data.frame(data)) stop("`data` must be a data.frame.")
+  if (!"Discont_Day" %in% names(data)) stop("Column `Discont_Day` not found in `data`.")
+
+  # Escape regex specials in the prefix, then build a regex to capture the trailing day number
+  esc_prefix <- gsub("([\\^$.*+?(){}|\\[\\]\\\\])", "\\\\\\1", prefix)
+  rx <- paste0("^", esc_prefix, "(\\d+)$")
+
+  # Find day columns like "<prefix><day>", e.g. "scr_terli_day5"
+  day_cols <- grep(rx, names(data), value = TRUE)
+  if (length(day_cols) == 0) stop("No columns found matching the given `prefix` followed by a day number.")
+
+  # Extract their day numbers and order columns by that number
+  day_nums <- as.integer(sub(rx, "\\1", day_cols))
+  ord <- order(day_nums)
+  day_cols <- day_cols[ord]
+  day_nums <- day_nums[ord]
+
+  # Build a matrix for fast row-wise indexing
+  mat <- as.matrix(data[, day_cols, drop = FALSE])
+
+  # For each row, find which column index matches its Discont_Day
+  dd <- data[["Discont_Day"]]
+  col_index <- match(dd, day_nums)
+
+  # Pull values using matrix indexing; NAs when no matching day/column
+  out <- rep(NA, nrow(data))
+  take <- !is.na(col_index)
+  if (any(take)) {
+    out[take] <- mat[cbind(which(take), col_index[take])]
+  }
+
+  # Add the new column and return the modified data
+  data[[new_var_name]] <- out
+  data
+}
+```
+
+```{r,include=FALSE}
+
+
+final_master <- final_master %>% merge(final_map_day0,by="subjectid",all.x = T)
+
+final_master <- final_master %>% mutate(ifelse(is.na(refascites_previous_comp),0,refascites_previous_comp))
+
+
+final_master <- final_master %>% mutate_at(c("hrs_responders_cat_2","sex_male"),as.factor)
+
+final_master <- add_by_discont_day(
+  data = final_master,
+  prefix = "alb_terli_day",
+  new_var_name = "alb_terli_discont_day"
+)
+final_master_listed_transplant <- final_master %>% filter(listed_transplant==1)
+
+
+
+
+
+```
+
+# Transplant yes = 2 no = 0, transplant_lt_status = 2 
+```{r}
+table(final_master_listed_transplant$transplant_lt_status)
+
+```
+
+# rrt_status
+```{r}
+table(final_master_listed_transplant$rrt_status)
+
+```
+
+# Death in 90 days yes = 1 no = 0, time_to_death_status_90days = 1 
+```{r}
+table(final_master_listed_transplant$time_to_death_status_90days)
+
+```
+
+
+# rrt_status, hrs_responders_cat_2
+```{r}
+table(final_master_listed_transplant$rrt_status,final_master_listed_transplant$hrs_responders_cat_2)
+fisher.test(table(final_master_listed_transplant$rrt_status,final_master_listed_transplant$hrs_responders_cat_2))
+
+```
+
+
+# (listed_transplant=1) and transplanted (transplant_lt_status = 2) new$rrt_90days,new$hrs_responders_cat_2 
+```{r}
+new <- final_master_listed_transplant %>% filter(listed_transplant==1 & transplant_lt_status == 2)
+table(new$rrt_90days,new$hrs_responders_cat_2)
+chisq.test(table(new$rrt_90days,new$hrs_responders_cat_2))
+```
+
+
+# transplant_lt_status vs  hrs_responders_cat_2
+```{r}
+
+table(final_master_listed_transplant$transplant_lt_status,final_master_listed_transplant$hrs_responders_cat_2)
+chisq.test(table(final_master_listed_transplant$transplant_lt_status,final_master_listed_transplant$hrs_responders_cat_2))
+```
+
+# transplant_lt_status = 2    transplant_slkt vs hrs_responders_cat_2
+```{r}
+new <- final_master_listed_transplant %>% filter(transplant_lt_status == 2)
+table(new$transplant_slkt,new$hrs_responders_cat_2)
+chisq.test(table(new$transplant_slkt,new$hrs_responders_cat_2))
+```
+
+
+
+# dc_days_to_death mean and sd
+```{r}
+mean(final_master_listed_transplant$dc_days_to_death,na.rm = T)
+sd(final_master_listed_transplant$dc_days_to_death,na.rm = T)
+summary(final_master_listed_transplant$dc_days_to_death)
+```
+
+
+# remove time_to_death_status_90days=0
+```{r}
+final_master_listed_transplant_alive <- final_master_listed_transplant %>% filter(time_to_death_status_90days!=0)
+mean(final_master_listed_transplant_alive$dc_days_to_death,na.rm = T)
+sd(final_master_listed_transplant_alive$dc_days_to_death,na.rm = T)
+summary(final_master_listed_transplant_alive$dc_days_to_death)
+```
+
+
+
+# time_to_transplant_90days mean and sd
+```{r}
+mean(final_master_listed_transplant$time_to_transplant_90days,na.rm = T)
+sd(final_master_listed_transplant$time_to_transplant_90days,na.rm = T)
+summary(final_master_listed_transplant$time_to_transplant_90days)
+```
+
+# dc_days_to_death mean and sd
+```{r}
+mean(final_master_listed_transplant$dc_days_to_death,na.rm = T)
+sd(final_master_listed_transplant$dc_days_to_death,na.rm = T)
+summary(final_master_listed_transplant$dc_days_to_death)
+```
+
+
+# Competing risk model outcome transplant=2, death=1 
+```{r}
+table(final_master_listed_transplant$time_to_death_status_90days_cmp)
+
+```
+
+# Competing risk model outcome 2 competing event 1 covariates:hrs_responders_cat_2+age+sex_male+admit_meld_3
+```{r}
+final_master_listed_transplant$time_to_death_status_90days_cmp <- factor(final_master_listed_transplant$time_to_death_status_90days_cmp)
+
+
+tidycmprsk::crr(Surv(time_to_death_90days_cmp,time_to_death_status_90days_cmp)~ hrs_responders_cat_2+age+sex_male+admit_meld_3,failcode=2,cencode=0, data = final_master_listed_transplant) %>% tbl_regression(exp = TRUE) %>% add_n()%>%
+  bold_p(0.05) %>%        # bold p-values under a given threshold (default 0.05)
+  bold_labels() 
+
+```
+
+# logistic regression outcome:hrs_responders_cat_2  covariates:age+sex_male+admit_meld_3+map_day0+refascites_previous_comp
+```{r}
+
+glm(hrs_responders_cat_2~age+sex_male+admit_meld_3+map_day0+refascites_previous_comp, data = final_master_listed_transplant, family = binomial) %>% tbl_regression(exp = TRUE,pvalue_fun = function(x) style_pvalue(x, digits = 3))
+
+```

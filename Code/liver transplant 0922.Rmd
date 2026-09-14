@@ -1,0 +1,336 @@
+---
+title: "Liver transplant"
+output: html_document
+date: "`r Sys.Date()`"
+---
+
+```{r,include=FALSE}
+library(tidyverse)
+library(tableone)
+library(writexl)
+library(gtsummary)
+library(survival)
+library(ggplot2)
+library(readxl)
+library(ggpubr)
+library(splines)
+library(xlsx)
+library(lattice)
+library(mice)
+library(DescTools)
+library(survminer)
+library(finalfit)
+library(tidycmprsk)
+library(ggsurvfit) 
+library(sqldf)
+library(table1)
+library(cobalt)
+library(MatchIt)
+
+
+
+final_master <- read_xlsx("/Users/to909/Desktop/Terlipressin/final_master_0508.xlsx")
+
+final_master <- final_master %>%
+  mutate(across(everything(), ~{
+    x_char <- as.character(.x)
+    if (all(grepl("^[-+]?[0-9]*\\.?[0-9]+$", x_char[!is.na(x_char)]))) {
+      as.numeric(x_char)
+    } else {
+      .x  # leave unchanged
+    }
+  }))
+
+final_master <- final_master %>%
+  mutate(
+    BMI = aki_weight / (aki_height/100)^2,
+    rrt_90days=ifelse(is.na(days_to_rrt)&days_to_rrt<=90,1,0),
+    lt_90days=ifelse(is.na(days_to_lt)&days_to_rrt<=90,1,0)
+    
+  )
+
+
+```
+
+
+
+```{r}
+
+# create scr_day
+map_days <- grep("^map_terli_day", str_sort(names(final_master)), value = TRUE)
+map_day0 <- final_master %>% 
+  select(subjectid,contains("map_terli_day0_time"))
+
+df_map_day0 <- map_day0 %>%  
+  pivot_longer(
+    cols = starts_with("map_terli_day"), 
+    names_to = c("temp", "day", "time"),    # we will capture these parts
+    names_pattern = "^(map_terli)_day(\\d+)_time(\\d+)$", # regex to split
+    values_to = "map"
+  ) %>%
+  # 2) Convert day/time to numeric so we can sort properly
+  mutate(
+    day = as.numeric(day),
+    time = as.numeric(time)
+  ) %>%
+  select(-temp)  # 'temp' is just the literal "map_terli", can drop if not needed
+
+final_map_day0 <- df_map_day0 %>% 
+  group_by(subjectid, day) %>% 
+   summarise(map_day0=mean(map,na.rm=T)) %>% select(subjectid,map_day0) %>% ungroup()
+
+```
+```{r}
+
+# data: a data.frame (e.g., final_master)
+# prefix: the column-name prefix before the day number (e.g., "scr_terli_day")
+# new_var_name: name of the new column to create (e.g., "scr_terli_discont_day")
+add_by_discont_day <- function(data, prefix, new_var_name) {
+  if (!is.data.frame(data)) stop("`data` must be a data.frame.")
+  if (!"Discont_Day" %in% names(data)) stop("Column `Discont_Day` not found in `data`.")
+
+  # Escape regex specials in the prefix, then build a regex to capture the trailing day number
+  esc_prefix <- gsub("([\\^$.*+?(){}|\\[\\]\\\\])", "\\\\\\1", prefix)
+  rx <- paste0("^", esc_prefix, "(\\d+)$")
+
+  # Find day columns like "<prefix><day>", e.g. "scr_terli_day5"
+  day_cols <- grep(rx, names(data), value = TRUE)
+  if (length(day_cols) == 0) stop("No columns found matching the given `prefix` followed by a day number.")
+
+  # Extract their day numbers and order columns by that number
+  day_nums <- as.integer(sub(rx, "\\1", day_cols))
+  ord <- order(day_nums)
+  day_cols <- day_cols[ord]
+  day_nums <- day_nums[ord]
+
+  # Build a matrix for fast row-wise indexing
+  mat <- as.matrix(data[, day_cols, drop = FALSE])
+
+  # For each row, find which column index matches its Discont_Day
+  dd <- data[["Discont_Day"]]
+  col_index <- match(dd, day_nums)
+
+  # Pull values using matrix indexing; NAs when no matching day/column
+  out <- rep(NA, nrow(data))
+  take <- !is.na(col_index)
+  if (any(take)) {
+    out[take] <- mat[cbind(which(take), col_index[take])]
+  }
+
+  # Add the new column and return the modified data
+  data[[new_var_name]] <- out
+  data
+}
+```
+
+```{r}
+
+
+final_master <- final_master %>% merge(final_map_day0,by="subjectid",all.x = T)
+
+
+
+
+
+
+
+
+
+
+final_master <- add_by_discont_day(
+  data = final_master,
+  prefix = "alb_terli_day",
+  new_var_name = "alb_terli_discont_day"
+)
+final_master_listed_transplant <- final_master %>% filter(listed_transplant==1)
+
+```
+
+```{r}
+all_vars <- c(
+  "age",
+  "sex_male",
+  "race",
+  "BMI",
+  "cirrhosis_etiology",
+  "he_previous_comp",
+  "ascites_previous_comp",
+  "refascites_previous_comp",
+  "sbp_previous_comp",
+  "nonsbp_previous_comp",
+  "phtn_bleed_previous_comp",
+  "hcc_previous_comp",
+  "tips_previous_comp",
+  "aki_previous_90days",
+  "mido_preadmission",
+  "oct_before_terli",
+  "pressors_aki",
+  "admit_meld_3",
+  "day0_meld_3",
+  "baseline_scr_new",
+  "baseline_scr",
+  "tbili_admit",
+  "inr_admit",
+  "sodium_admit",
+  "albumin_admit",
+  "aclf_grade",
+  "clif_c_score",
+  "icu_admit",
+  "criteria_1",
+  "criteria_2",
+  "criteria_3",
+  "criteria_4",
+  "alb_terli_discont_day",
+  "terli_route_day0",
+  "Discont_Day", 
+  "albumin_before_terli", 
+  "totalalbumin_before_terli", 
+   
+  "hrs_responders", 
+  "hrs_responders_cat_2",
+  "map_day0"
+)
+
+num_vars <- c(
+  "age",
+  "BMI",
+  "admit_meld_3",
+  "day0_meld_3",
+  "baseline_scr_new",
+  "baseline_scr",
+  "tbili_admit",
+  "inr_admit",
+  "sodium_admit",
+  "albumin_admit",
+  "aclf_grade",
+  "clif_c_score",
+  "alb_terli_discont_day",
+  "totalalbumin_before_terli","albvolume_before_terli",
+  "Discont_Day",
+  "map_day0"
+)
+
+cat_vars <- setdiff(all_vars,num_vars)
+
+
+```
+# Table 1 function
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+
+create_table_one <- function(all_vars,
+                             cat_vars,
+                             data,
+                             strata,
+                             output) {
+  
+  numerical_vars=setdiff(all_vars,cat_vars)
+  
+  # 1) Generate the table
+  T1_after <- tableone::CreateTableOne(
+    vars       = all_vars,
+    strata     = strata,        # variable to stratify by
+    data       = data,
+    factorVars = cat_vars,      # specify which variables are factors
+    addOverall = TRUE,
+    includeNA  = FALSE
+  )
+
+  # 2) Print TableOne object and convert to data frame
+  T1_after_print <-
+    print(
+      T1_after,
+      showAllLevels = T,
+      nonnormal = numerical_vars,
+      missing       = TRUE,
+      quote         = FALSE,
+      noSpaces      = TRUE,
+      printToggle   = FALSE
+    )
+  
+
+  # 3) Write the table as CSV
+  write.csv(T1_after_print, file = output)
+}
+
+
+
+```
+
+
+#Table 1
+```{r}
+
+
+create_table_one(
+  all_vars = all_vars,
+  cat_vars = cat_vars,
+  data     = final_master,
+  strata   = "listed_transplant",
+  output   = '/Users/to909/Desktop/Terlipressin projects/Liver transplant/Table_1_0922.csv'
+)
+
+
+
+```
+#Table 2
+```{r}
+
+final_master_listed_transplant$hrs_responders
+create_table_one(
+  all_vars = all_vars,
+  cat_vars = cat_vars,
+  data     = final_master_listed_transplant,
+  strata   = "hrs_responders",
+  output   = '/Users/to909/Desktop/Terlipressin projects/Liver transplant/Table_2_listed_hrs_responders_0922.csv'
+)
+
+
+
+```
+
+#Table 3
+```{r}
+
+final_master_listed_transplant$hrs_responders
+create_table_one(
+  all_vars = all_vars,
+  cat_vars = cat_vars,
+  data     = final_master_listed_transplant,
+  strata   = "hrs_responders_cat_2",
+  output   = '/Users/to909/Desktop/Terlipressin projects/Liver transplant/Table_2_listed_hrs_responders_cat_2_0922.csv'
+)
+
+
+
+```
+
+#Table 4
+```{r}
+
+
+create_table_one(
+  all_vars = all_vars,
+  cat_vars = cat_vars,
+  data     = final_master_listed_transplant,
+  strata   = "hrs_responders_cat_2",
+  output   = '/Users/to909/Desktop/Terlipressin projects/Liver transplant/Table_2_listed_hrs_responders_cat_2_0922.csv'
+)
+
+
+
+```
+
+
+
+
+```{r}
+final_master_listed_transplant <- final_master_listed_transplant %>% mutate(baseline_scr_new_cat=ifelse(baseline_scr_new<3,"<3",">=3"),
+                                                                            baseline_scr_new_cat_5=ifelse(baseline_scr_new<5,"<5",">=5"))
+
+table(final_master_listed_transplant$HRS_reversal_new,final_master_listed_transplant$baseline_scr_new_cat)
+
+table(final_master_listed_transplant$hrs_responders,final_master_listed_transplant$baseline_scr_new_cat)
+
+table(final_master_listed_transplant$hrs_responders_cat_2,final_master_listed_transplant$baseline_scr_new_cat)
+
+```

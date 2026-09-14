@@ -1,0 +1,42 @@
+---
+title: "Extended Follow-Up (EFU) Variables"
+author: "Tianqi Ouyang"
+date: last-modified
+---
+
+The **Extended Follow-Up (EFU)** REDCap form collects 1-year outcomes (readmission, death, RRT, transplant listing / transplant, and post-treatment and post-transplant creatinine) for the HARMONY cohort. Sites returned one de-identified CSV each (no dates — only the REDCap-calculated `efu_days*` fields relative to the index admission date), stored in the Partners Dropbox under `Extended Data Collection/Finalized Files/09SEP2026/`.
+
+Source: [`EFU_DataDictionary.csv`](../EFU_DataDictionary.csv) (REDCap data dictionary export).
+
+::: {.callout-note}
+## Coding conventions
+
+- `yesno` fields: `1` = Yes, `0` = No
+- `calc` fields are REDCap-calculated day counts from **index admission date** (`admit_date`), *not* from terlipressin initiation
+- `text` lab fields (creatinine, bilirubin, INR, Na, albumin) are numeric strings; values reported as below the detection limit (e.g. `<0.2`) are parsed to the limit value in the analysis
+- Radio `efu_listing`: `0` = Not listed, `1` = Listed or transplanted
+- Dropdown `codestatus`: `0` = DNR, `1` = Full code
+:::
+
+```{r}
+#| label: efu-dictionary
+#| message: false
+#| warning: false
+library(tidyverse)
+
+dd <- read_csv("../EFU_DataDictionary.csv", show_col_types = FALSE)
+names(dd)[1:7] <- c("field", "category", "form", "section", "type", "label", "choices")
+
+dd %>%
+  filter(type != "descriptive") %>%
+  transmute(
+    `#`        = row_number(),
+    Variable   = paste0("`", field, "`"),
+    Type       = type,
+    Label      = str_squish(str_remove_all(label, "<[^>]+>")),
+    `Choices / Calculation` = str_squish(coalesce(choices, "")) %>%
+      str_replace_all("\\|", " \\\\| "),
+    Validation = coalesce(`Text Validation Type OR Show Slider Number`, "")
+  ) %>%
+  knitr::kable()
+```

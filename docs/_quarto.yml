@@ -1,0 +1,30 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "Terlipressin — Liver Transplant"
+  navbar:
+    background: "#2c8dbb"
+    foreground: white
+    left:
+      - href: index.qmd
+        text: Summary
+      - href: redcap_variables.qmd
+        text: REDCap Variables
+      - href: derived_variables.qmd
+        text: Derived Variables
+      - href: efu_variables.qmd
+        text: EFU Variables
+      - href: analysis.qmd
+        text: Analysis
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    toc-location: right
+    code-fold: true
+    echo: false
+    self-contained: false
