@@ -30,12 +30,12 @@ HARMONY Terlipressin **Liver Transplant** sub-project — 1-year extended follow
 | 2 | EFU summary | `listed_transplant` | all 40 EFU fields |
 | 3 | EFU summary | `efu_listingstatus` | same minus stratifier |
 
-Tables are built with **`tableone::CreateTableOne()` only** — `docs/analysis.qmd` overrides the shared pipeline's `create_table_one()` with a tableone-only version (`CreateTableOne()` → `print()` → `write.csv()` to `docs/tables/`) and shows the same printed matrix on the page with `knitr::kable()`. Do **not** switch back to the shared table1 HTML version: its p-values include the Overall column as a third group (bug S1 in `docs/bugs.qmd`).
+Tables use the shared pipeline's `create_table_one()` — since 2026-09-15 it is tableone-only (`CreateTableOne()` → CSV in `docs/tables/`, returns `knitr::kable()` of the same matrix; pass `caption =`). Bug S1 (table1 Overall-column p-values) is fixed upstream; see `docs/bugs.qmd`.
 
 ## Data Caveats (details and cross-project status in `docs/bugs.qmd`)
 
 - `map_terli_day0_time0..3` contain `0` placeholders; `map_day0_avg` recodes `0` → `NA` before averaging.
-- The shared pipeline's `mean_map_day0` collides with a same-named column in the master xlsx and comes out as `mean_map_day0.x` / `.y` — do not reference it; use `map_day0_avg`.
+- `mean_map_day0` from the shared pipeline is fixed (S2) but still averages `0` placeholders (S3); this project uses `map_day0_avg` (`0 → NA` first).
 - `albumintotal_terli_dayN` = grams of albumin **given** on day N (→ `total_albumin`); `alb_terli_dayN` = **serum** albumin. The legacy `.Rmd`s confused the two.
 - One `efu_lttbili` value is a below-detection string; `parse_number()` keeps the limit value.
 
