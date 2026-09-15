@@ -30,9 +30,9 @@ HARMONY Terlipressin **Liver Transplant** sub-project — 1-year extended follow
 | 2 | EFU summary | `listed_transplant` | all 40 EFU fields |
 | 3 | EFU summary | `efu_listingstatus` | same minus stratifier |
 
-Tables use the shared pipeline's `create_table_one()` — since 2026-09-15 it is tableone-only (`CreateTableOne()` → CSV in `docs/tables/`, returns `knitr::kable()` of the same matrix; pass `caption =`). Bug S1 (table1 Overall-column p-values) is fixed upstream; see `docs/bugs.qmd`.
+Tables use the shared pipeline's `create_table_one()` — since 2026-09-15 it is tableone-only (`CreateTableOne()` → CSV in `docs/tables/`, returns `knitr::kable()` of the same matrix; pass `caption =`). Bug S1 (table1 Overall-column p-values) is fixed upstream; see `notes/BUGS.md` (local only).
 
-## Data Caveats (details and cross-project status in `docs/bugs.qmd`)
+## Data Caveats (details and cross-project status in `notes/BUGS.md` — local, gitignored)
 
 - `map_terli_day0_time0..3` contain `0` placeholders; `map_day0_avg` recodes `0` → `NA` before averaging.
 - `mean_map_day0` from the shared pipeline is fixed (S2) but still averages `0` placeholders (S3); this project uses `map_day0_avg` (`0 → NA` first).
@@ -46,11 +46,11 @@ Tables use the shared pipeline's `create_table_one()` — since 2026-09-15 it is
 | `docs/analysis.qmd` | Canonical analysis — sources the shared pipeline |
 | `docs/index.qmd` | Project summary page |
 | `docs/efu_variables.qmd` | EFU data dictionary page |
-| `docs/bugs.qmd` | Bug tracker (S = shared pipeline, L = legacy scripts, D = EFU data) with cross-project status — update it when a bug is fixed upstream |
+| `notes/BUGS.md` | Bug tracker (S = shared pipeline, L = legacy scripts, D = EFU data) — **local only, gitignored; never add it to the website or the repo** (user preference) |
 | `docs/_quarto.yml` | Site config |
 | `docs/{redcap,derived}_variables.qmd` | Symlinks to the main project's variable dictionaries |
 | `docs/tables/` | CSV table outputs |
-| `Code/*.Rmd` | Legacy analyst scripts (Sep–Nov 2025) — superseded; their bugs are listed in `docs/bugs.qmd` |
+| `Code/*.Rmd` | Legacy analyst scripts (Sep–Nov 2025) — superseded; their bugs are listed in `notes/BUGS.md` |
 | `Requests/*.docx` | Original analysis request documents |
 | `Results/` | Legacy outputs |
 

@@ -26,21 +26,16 @@ site-submitted files under
 | 2 — EFU summary | EFU patients | `listed_transplant` (index-hospitalization listing, shared pipeline) | All EFU outcome fields |
 | 3 — EFU summary | EFU patients | `efu_listingstatus` | All EFU outcome fields except the stratifier |
 
-# Bugs Found (summary)
+# Data Handling Notes
 
-The legacy `Code/*.Rmd` scripts, the shared pipeline and the EFU site files
-were reviewed before this analysis was written. All findings, with their
-status in the other HARMONY sub-projects, are listed on the
-[**Bug Tracker**](bugs.qmd) page. The ones that change how this file works:
-
-| ID | Bug | Handling in this file |
-|:--|:--|:--|
-| S1 | Shared `create_table_one()` passed the Overall column into `pvalue()` → HTML p-values inflated | **Fixed in the shared pipeline 2026-09-15** (tableone only); this file uses the fixed function |
-| S2 | Shared pipeline yielded `mean_map_day0.x` / `.y` instead of `mean_map_day0` | **Fixed in the shared pipeline 2026-09-15**; `map_day0_avg` is still computed here because it also handles S3 (`0 → NA`) |
-| S3 | Day-0 MAP fields use `0` as "not measured" | `0 → NA` before averaging |
-| L5 | Old scripts used serum albumin (`alb_terli_dayN`) for "albumin given" | `albumintotal_terli_dayX` row = shared `total_albumin` (grams given, days 0–13) |
-| D1 | Yale IDs `YAL-00N` vs `Yale-N` | Normalized join key |
-| D2 | One CCF EFU row is not in the master | Cohort n = 221 (computed) |
+| Topic | Handling in this analysis |
+|:--|:--|
+| Study IDs | EFU files format Yale IDs as `YAL-00N`; the master uses `Yale-N`. Both sides are joined on a normalized key (upper-case prefix + integer). |
+| Cohort size | 222 EFU rows → 221 analyzable patients: one CCF row has an ID that is not in the locked master; the 22 CSF master patients have no EFU file. The cohort n is computed, not hard-coded. |
+| Day-0 MAP | `map_day0_avg` = mean of `map_terli_day0_time0..3` after recoding `0` (not measured) to `NA`. |
+| Albumin during therapy | `albumintotal_terli_dayN` = grams given on day N; the requested `albumintotal_terli_dayX` row is the shared `total_albumin` (sum over days 0–13; nothing is recorded after `Discont_Day`). `alb_terli_dayN` is *serum* albumin and is not used. |
+| Below-detection labs | One `efu_lttbili` value is a `<x.x` string; `readr::parse_number()` keeps the limit value. |
+| Missing stratifier | One patient has no `efu_listingstatus`; Tables 1 and 3 use n = 220, Table 2 uses n = 221. |
 
 ```{r setup}
 #| include: false
@@ -63,15 +58,14 @@ dir.create("tables", showWarnings = FALSE)
 
 # Table Helper
 
-Tables use the shared pipeline's `create_table_one()` (fixed 2026-09-15 —
-tableone only: `tableone::CreateTableOne()` → `print()` → `write.csv()`, and
-the same printed matrix is returned as a `knitr::kable()`), so the web table
-and the CSV are identical. Conventions (tableone defaults, matching every
-earlier Table 1 CSV in the registry): continuous variables as median [IQR]
-with the Kruskal-Wallis rank-sum test (`test = nonnorm`; equivalent to
-Mann-Whitney for two groups); categorical variables as n (%) with the
-chi-squared test (continuity-corrected for 2 × 2). `Missing` is the percentage
-of the cohort with a missing value.
+Tables use the shared pipeline's `create_table_one()`:
+`tableone::CreateTableOne()` → `print()` → `write.csv()`, with the same printed
+matrix returned as a `knitr::kable()`, so the web table and the CSV are
+identical. Conventions (tableone defaults, matching every earlier Table 1 CSV
+in the registry): continuous variables as median [IQR] with the Kruskal-Wallis
+rank-sum test (`test = nonnorm`; equivalent to Mann-Whitney for two groups);
+categorical variables as n (%) with the chi-squared test (continuity-corrected
+for 2 × 2). `Missing` is the percentage of the cohort with a missing value.
 
 # EFU Data Import
 

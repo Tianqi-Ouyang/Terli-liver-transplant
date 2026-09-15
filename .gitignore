@@ -32,3 +32,6 @@ docs/shared_pipeline.R
 
 # Local tooling
 .claude/
+
+# Local notes (bug tracker) — never published
+notes/
