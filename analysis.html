@@ -148,10 +148,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="nav-link active" href="./analysis.html" aria-current="page"> 
 <span class="menu-text">Analysis</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./bugs.html"> 
-<span class="menu-text">Bug Tracker</span></a>
-  </li>  
 </ul>
           </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
@@ -169,7 +165,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#scope" id="toc-scope" class="nav-link active" data-scroll-target="#scope">Scope</a></li>
-  <li><a href="#bugs-found-summary" id="toc-bugs-found-summary" class="nav-link" data-scroll-target="#bugs-found-summary">Bugs Found (summary)</a></li>
+  <li><a href="#data-handling-notes" id="toc-data-handling-notes" class="nav-link" data-scroll-target="#data-handling-notes">Data Handling Notes</a></li>
   <li><a href="#table-helper" id="toc-table-helper" class="nav-link" data-scroll-target="#table-helper">Table Helper</a></li>
   <li><a href="#efu-data-import" id="toc-efu-data-import" class="nav-link" data-scroll-target="#efu-data-import">EFU Data Import</a>
   <ul class="collapse">
@@ -260,59 +256,50 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="bugs-found-summary" class="level1">
-<h1>Bugs Found (summary)</h1>
-<p>The legacy <code>Code/*.Rmd</code> scripts, the shared pipeline and the EFU site files were reviewed before this analysis was written. All findings, with their status in the other HARMONY sub-projects, are listed on the <a href="./bugs.html"><strong>Bug Tracker</strong></a> page. The ones that change how this file works:</p>
+<section id="data-handling-notes" class="level1">
+<h1>Data Handling Notes</h1>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
+<col style="width: 50%">
+<col style="width: 50%">
 </colgroup>
 <thead>
 <tr class="header">
-<th style="text-align: left;">ID</th>
-<th style="text-align: left;">Bug</th>
-<th style="text-align: left;">Handling in this file</th>
+<th style="text-align: left;">Topic</th>
+<th style="text-align: left;">Handling in this analysis</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">S1</td>
-<td style="text-align: left;">Shared <code>create_table_one()</code> passed the Overall column into <code>pvalue()</code> → HTML p-values inflated</td>
-<td style="text-align: left;"><strong>Fixed in the shared pipeline 2026-09-15</strong> (tableone only); this file uses the fixed function</td>
+<td style="text-align: left;">Study IDs</td>
+<td style="text-align: left;">EFU files format Yale IDs as <code>YAL-00N</code>; the master uses <code>Yale-N</code>. Both sides are joined on a normalized key (upper-case prefix + integer).</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">S2</td>
-<td style="text-align: left;">Shared pipeline yielded <code>mean_map_day0.x</code> / <code>.y</code> instead of <code>mean_map_day0</code></td>
-<td style="text-align: left;"><strong>Fixed in the shared pipeline 2026-09-15</strong>; <code>map_day0_avg</code> is still computed here because it also handles S3 (<code>0 → NA</code>)</td>
+<td style="text-align: left;">Cohort size</td>
+<td style="text-align: left;">222 EFU rows → 221 analyzable patients: one CCF row has an ID that is not in the locked master; the 22 CSF master patients have no EFU file. The cohort n is computed, not hard-coded.</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">S3</td>
-<td style="text-align: left;">Day-0 MAP fields use <code>0</code> as “not measured”</td>
-<td style="text-align: left;"><code>0 → NA</code> before averaging</td>
+<td style="text-align: left;">Day-0 MAP</td>
+<td style="text-align: left;"><code>map_day0_avg</code> = mean of <code>map_terli_day0_time0..3</code> after recoding <code>0</code> (not measured) to <code>NA</code>.</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">L5</td>
-<td style="text-align: left;">Old scripts used serum albumin (<code>alb_terli_dayN</code>) for “albumin given”</td>
-<td style="text-align: left;"><code>albumintotal_terli_dayX</code> row = shared <code>total_albumin</code> (grams given, days 0–13)</td>
+<td style="text-align: left;">Albumin during therapy</td>
+<td style="text-align: left;"><code>albumintotal_terli_dayN</code> = grams given on day N; the requested <code>albumintotal_terli_dayX</code> row is the shared <code>total_albumin</code> (sum over days 0–13; nothing is recorded after <code>Discont_Day</code>). <code>alb_terli_dayN</code> is <em>serum</em> albumin and is not used.</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">D1</td>
-<td style="text-align: left;">Yale IDs <code>YAL-00N</code> vs <code>Yale-N</code></td>
-<td style="text-align: left;">Normalized join key</td>
+<td style="text-align: left;">Below-detection labs</td>
+<td style="text-align: left;">One <code>efu_lttbili</code> value is a <code>&lt;x.x</code> string; <code>readr::parse_number()</code> keeps the limit value.</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">D2</td>
-<td style="text-align: left;">One CCF EFU row is not in the master</td>
-<td style="text-align: left;">Cohort n = 221 (computed)</td>
+<td style="text-align: left;">Missing stratifier</td>
+<td style="text-align: left;">One patient has no <code>efu_listingstatus</code>; Tables 1 and 3 use n = 220, Table 2 uses n = 221.</td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="table-helper" class="level1">
 <h1>Table Helper</h1>
-<p>Tables use the shared pipeline’s <code>create_table_one()</code> (fixed 2026-09-15 — tableone only: <code>tableone::CreateTableOne()</code> → <code>print()</code> → <code>write.csv()</code>, and the same printed matrix is returned as a <code>knitr::kable()</code>), so the web table and the CSV are identical. Conventions (tableone defaults, matching every earlier Table 1 CSV in the registry): continuous variables as median [IQR] with the Kruskal-Wallis rank-sum test (<code>test = nonnorm</code>; equivalent to Mann-Whitney for two groups); categorical variables as n (%) with the chi-squared test (continuity-corrected for 2 × 2). <code>Missing</code> is the percentage of the cohort with a missing value.</p>
+<p>Tables use the shared pipeline’s <code>create_table_one()</code>: <code>tableone::CreateTableOne()</code> → <code>print()</code> → <code>write.csv()</code>, with the same printed matrix returned as a <code>knitr::kable()</code>, so the web table and the CSV are identical. Conventions (tableone defaults, matching every earlier Table 1 CSV in the registry): continuous variables as median [IQR] with the Kruskal-Wallis rank-sum test (<code>test = nonnorm</code>; equivalent to Mann-Whitney for two groups); categorical variables as n (%) with the chi-squared test (continuity-corrected for 2 × 2). <code>Missing</code> is the percentage of the cohort with a missing value.</p>
 </section>
 <section id="efu-data-import" class="level1">
 <h1>EFU Data Import</h1>
