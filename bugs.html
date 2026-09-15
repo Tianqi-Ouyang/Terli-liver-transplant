@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Tianqi Ouyang">
-<meta name="dcterms.date" content="2026-09-14">
+<meta name="dcterms.date" content="2026-09-15">
 
 <title>Bug Tracker – Terlipressin — Liver Transplant</title>
 <style>
@@ -161,7 +161,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">September 14, 2026</p>
+      <p class="date">September 15, 2026</p>
     </div>
   </div>
   
@@ -180,11 +180,11 @@ ul.task-list li input[type="checkbox"] {
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Shared-pipeline bugs are still open upstream
+<span class="screen-reader-only">Important</span>Status of the shared-pipeline bugs
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Bugs <strong>S1–S3</strong> are in <code>Terlipressin/code/shared_pipeline.qmd</code> (or in the master xlsx it loads). I checked every sub-project on 2026-09-14 — none of them has fixed S1 or S2; only Xing and this project handle S3. Until the shared pipeline is patched, each sub-project needs the local workaround shown in the <em>Handling here</em> column.</p>
+<p><strong>S1 and S2 were fixed in <code>Terlipressin/code/shared_pipeline.qmd</code> on 2026-09-15</strong> (<code>create_table_one()</code> is tableone-only and returns a <code>knitr::kable()</code>; the xlsx copy of <code>mean_map_day0</code> is dropped before the merge). The fix is in the working copy of the Terlipressin repo and takes effect in every sub-project on its next render — the sibling sites listed under S1 still show the old p-values until they are re-rendered and republished. <strong>S3</strong> (MAP <code>0</code> placeholders) is unchanged upstream: only Xing and this project recode <code>0 → NA</code>.</p>
 </div>
 </div>
 <section id="s-shared-pipeline-master-data" class="level2">
@@ -214,16 +214,16 @@ ul.task-list li input[type="checkbox"] {
 <td style="text-align: left;"><code>create_table_one()</code> → <code>pvalue()</code>; introduced in <em>Adverse event</em> <code>docs/results.qmd</code> commit <code>71a88fb</code> (2026-04-13), copied into the shared pipeline 2026-04-14</td>
 <td style="text-align: left;"><code>table1::table1(..., overall = "Overall", extra.col = list("P-value" = pvalue))</code> passes the <strong>Overall</strong> column into <code>pvalue()</code> as an extra stratum (element named <code>overall</code>, table1 1.4.3)</td>
 <td style="text-align: left;">Every <strong>HTML</strong> p-value is computed on (group A, group B, Overall): inflated p-values, and Kruskal-Wallis instead of Mann-Whitney for 2-group continuous variables. The tableone <strong>CSV</strong> written by the same call is correct. Example: this project <code>sex_male</code> 0.239 vs 0.121; AlcHep <code>scr_admit</code> 0.431 (site) vs 0.195 (CSV)</td>
-<td style="text-align: left;"><strong>Not fixed anywhere.</strong> Affected (HTML p-values wrong on the published site): <em>Adverse event</em> (own copy, 9 tables, newest version 2026-07-23 still has it), <em>AlcHep</em> (2 tables), <em>Xing</em> (1 table), <em>Other Vasoconstrictors</em> (1 table, site not rendered). Not affected: <em>Cardio</em> (overrides with a tableone-only CSV + kable version), main <em>Terlipressin</em> <code>Tables.Rmd</code> / <code>docs/data_summary.qmd</code> (tableone only)</td>
-<td style="text-align: left;"><strong>Not used.</strong> This project overrides <code>create_table_one()</code> with the original tableone-only version (<code>CreateTableOne()</code> → <code>print()</code> → <code>write.csv()</code>) and shows that same printed matrix on the page with <code>knitr::kable()</code>, so the web table <em>is</em> the CSV. (Upstream one-line fix if the table1 path is kept: <code>x &lt;- x[tolower(names(x)) != "overall"]</code> at the top of <code>pvalue()</code>, or <code>overall = FALSE</code> as in the table1 vignette.)</td>
+<td style="text-align: left;"><strong>Fixed in the shared pipeline 2026-09-15</strong> — <code>create_table_one()</code> is now tableone-only (<code>CreateTableOne()</code> → CSV, returns <code>knitr::kable()</code> of the same matrix; new <code>caption =</code> argument; warns when a variable is not in <code>data</code>). Sites that still show the old p-values until re-rendered: <em>AlcHep</em> (2 tables), <em>Xing</em> (1 table), <em>Other Vasoconstrictors</em> (1 table, never rendered). <em>Adverse event</em> keeps its <strong>own copy</strong> of the buggy function in <code>docs/results.qmd</code> (9 tables) — must be fixed there separately. Not affected: <em>Cardio</em> (own tableone-only override), main <em>Terlipressin</em> <code>Tables.Rmd</code> / <code>docs/data_summary.qmd</code></td>
+<td style="text-align: left;">Uses the fixed shared function directly (no local override)</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;"><strong>S2</strong></td>
 <td style="text-align: left;"><code>mean-map</code> + <code>derived-variables</code> chunks</td>
 <td style="text-align: left;">The master xlsx already contains <code>mean_map_day0</code> (written by <code>Tables.Rmd</code>); the pipeline merges a second copy → <code>mean_map_day0.x</code> / <code>mean_map_day0.y</code>, no plain <code>mean_map_day0</code>, although <code>CLAUDE.md</code> lists it as provided</td>
 <td style="text-align: left;">Any <code>all_vars</code> entry <code>mean_map_day0</code> / <code>map_day0</code> is silently removed by <code>intersect(all_vars, names(data))</code></td>
-<td style="text-align: left;"><strong>Not fixed anywhere.</strong> <em>Xing</em> Table 1 lists <code>"map_day0"</code> → the row is missing from its published table and CSV (confirmed: no MAP row in <code>table1_death_status_90days_init.csv</code>). Other projects do not reference the variable</td>
-<td style="text-align: left;"><code>map_day0_avg</code> computed explicitly from the four <code>map_terli_day0_time*</code> fields</td>
+<td style="text-align: left;"><strong>Fixed in the shared pipeline 2026-09-15</strong> — the xlsx copy is dropped before the merge (<code>select(-any_of("mean_map_day0"))</code>), so <code>master$mean_map_day0</code> exists again (values identical to the xlsx). <em>Xing</em> still lists <code>"map_day0"</code> (wrong name) → its Table 1 row stays missing until renamed to <code>mean_map_day0</code>; the new <code>create_table_one()</code> warning now reports it</td>
+<td style="text-align: left;"><code>map_day0_avg</code> still computed here because it also applies the S3 recode</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><strong>S3</strong></td>
