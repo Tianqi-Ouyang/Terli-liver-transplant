@@ -38,6 +38,8 @@ Tables use the shared pipeline's `create_table_one()` — since 2026-09-15 it is
 - `mean_map_day0` from the shared pipeline is fixed (S2) but still averages `0` placeholders (S3); this project uses `map_day0_avg` (`0 → NA` first).
 - `albumintotal_terli_dayN` = grams of albumin **given** on day N (→ `total_albumin`); `alb_terli_dayN` = **serum** albumin. The legacy `.Rmd`s confused the two.
 - One `efu_lttbili` value is a below-detection string; `parse_number()` keeps the limit value.
+- `total_albumin` counts a patient as 0 g when the grams field was never filled; `total_albumin_incomplete` (export script) flags the 1 patient where albumin was recorded as given but no grams entered.
+- The master xlsx stores `child_pugh_score` and `dosechange_day` values that disagree with what the shared pipeline recomputes (153 and 47 patients). The pipeline values are the ones used everywhere here — worth resolving upstream.
 
 ## Repository Layout
 
@@ -50,6 +52,8 @@ Tables use the shared pipeline's `create_table_one()` — since 2026-09-15 it is
 | `docs/_quarto.yml` | Site config |
 | `docs/{redcap,derived}_variables.qmd` | Symlinks to the main project's variable dictionaries |
 | `docs/tables/` | CSV table outputs |
+| `Code/export_analysis_data.R` | Rebuilds the full analysis dataset (master + EFU + derived) and writes `data/LT_EFU_analysis_data_<MMDDYYYY>.xlsx` + `.rds`. Run with `Rscript "Code/export_analysis_data.R"` from the project root |
+| `data/` | **Patient-level exports — gitignored, never commit or publish** |
 | `Code/*.Rmd` | Legacy analyst scripts (Sep–Nov 2025) — superseded; their bugs are listed in `notes/BUGS.md` |
 | `Requests/*.docx` | Original analysis request documents |
 | `Results/` | Legacy outputs |
