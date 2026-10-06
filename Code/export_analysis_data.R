@@ -141,17 +141,10 @@ master <- master %>%
         rowSums(!is.na(across(all_of(alb_g)))) == 0,
       1, 0
     ),
-    albumin_days_recorded = rowSums(!is.na(across(all_of(alb_g)))),
-
-    # Total grams of albumin given during terlipressin therapy: the sum of
-    # albumintotal_terli_day0 ... day13 (same value as the shared pipeline's
-    # total_albumin, under the name that matches the REDCap fields).
-    albumintotal_terli = rowSums(across(all_of(alb_g), as.numeric), na.rm = TRUE),
-    albumintotal_terli_days = albumin_days_recorded
+    albumin_days_recorded = rowSums(!is.na(across(all_of(alb_g))))
   )
 
 project_names <- c("id_key", "map_day0_avg", "map_day0_n_readings",
-                   "albumintotal_terli", "albumintotal_terli_days",
                    "total_albumin_incomplete", "albumin_days_recorded",
                    "efu_available", "in_analysis_cohort", "in_table1_cohort")
 

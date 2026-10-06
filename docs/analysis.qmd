@@ -33,7 +33,7 @@ site-submitted files under
 | Study IDs | EFU files format Yale IDs as `YAL-00N`; the master uses `Yale-N`. Both sides are joined on a normalized key (upper-case prefix + integer). |
 | Cohort size | 222 EFU rows → 221 analyzable patients: one CCF row has an ID that is not in the locked master; the 22 CSF master patients have no EFU file. The cohort n is computed, not hard-coded. |
 | Day-0 MAP | `map_day0_avg` = mean of `map_terli_day0_time0..3` after recoding `0` (not measured) to `NA`. |
-| Albumin during therapy | `albumintotal_terli` = sum of `albumintotal_terli_day0` … `day13` (grams given per day; blank days count as 0 g, and nothing is recorded after `Discont_Day`, so this is the whole treatment course). Identical to the shared pipeline's `total_albumin`. `alb_terli_dayN` is *serum* albumin and is not used. |
+| Albumin during therapy | `albumintotal_terli_dayN` = grams given on day N; the requested `albumintotal_terli_dayX` row is the shared `total_albumin` (sum over days 0–13; nothing is recorded after `Discont_Day`). `alb_terli_dayN` is *serum* albumin and is not used. |
 | Below-detection labs | One `efu_lttbili` value is a `<x.x` string; `readr::parse_number()` keeps the limit value. |
 | Missing stratifier | One patient has no `efu_listingstatus`; Tables 1 and 3 use n = 220, Table 2 uses n = 221. |
 
@@ -173,13 +173,9 @@ bind_rows(
 t1_numeric <- c(
   "age", "admit_meld_3", "day0_meld_3", "baseline_scr_new", "baseline_scr",
   "tbili_admit", "inr_admit", "sodium_admit", "albumin_admit", "map_day0_avg",
-  "aclf_grade", "clif_c_score", "Discont_Day", "albumintotal_terli",
+  "aclf_grade", "clif_c_score", "Discont_Day", "total_albumin",
   "totalalbumin_before_terli", "albvolume_before_terli"
 )
-
-# Every per-day "grams of albumin given" field, days 0-13, picked up by pattern
-# so a future day column is included automatically.
-alb_day_cols <- grep("^albumintotal_terli_day[0-9]+$", names(efu_cohort), value = TRUE)
 
 efu_cohort <- efu_cohort %>%
   mutate(
@@ -196,34 +192,16 @@ efu_cohort <- efu_cohort %>%
       na.rm = TRUE
     ),
     map_day0_avg = if_else(is.nan(map_day0_avg), NA_real_, map_day0_avg),
-
-    # Total grams of albumin given during terlipressin therapy: the sum of
-    # albumintotal_terli_day0 ... day13. Days with no albumin are blank in
-    # REDCap, so na.rm = TRUE treats them as 0 g; nothing is ever recorded
-    # after Discont_Day, so this is the whole treatment course.
-    albumintotal_terli = rowSums(across(all_of(alb_day_cols), as.numeric), na.rm = TRUE),
-    albumintotal_terli_days = rowSums(!is.na(across(all_of(alb_day_cols)))),
-
     across(all_of(t1_numeric), as.numeric)
   )
 
 tibble(
-  variable = c("map_day0_avg", "map_day0_avg", "albumintotal_terli",
-               "albumintotal_terli", "albumintotal_terli", "albumintotal_terli"),
-  check = c("non-missing", "readings used per patient (median)",
-            paste0("day columns summed (", min(as.integer(sub("\\D+", "", alb_day_cols))),
-                   "-", max(as.integer(sub("\\D+", "", alb_day_cols))), ")"),
-            "patients with any albumin recorded", "patients summing to 0 g",
-            "identical to the shared pipeline's total_albumin"),
+  `map_day0_avg` = c("non-missing", "readings used per patient (median)"),
   value = c(
     sum(!is.na(efu_cohort$map_day0_avg)),
-    median(rowSums(!is.na(efu_cohort[, paste0("map_terli_day0_time", 0:3)]))),
-    length(alb_day_cols),
-    sum(efu_cohort$albumintotal_terli_days > 0),
-    sum(efu_cohort$albumintotal_terli == 0),
-    sum(abs(efu_cohort$albumintotal_terli - efu_cohort$total_albumin) < 1e-9)
+    median(rowSums(!is.na(efu_cohort[, paste0("map_terli_day0_time", 0:3)])))
   )
-) %>% knitr::kable(caption = "Derived-variable checks")
+) %>% knitr::kable()
 ```
 
 ## Listing status: index hospitalization vs EFU
@@ -259,7 +237,7 @@ t1_all_vars <- c(
   "map_day0_avg",
   "aclf_grade", "clif_c_score", "icu_admit",
   "criteria_1", "criteria_2", "criteria_3", "criteria_4",
-  "terli_route_day0", "Discont_Day", "albumintotal_terli",
+  "terli_route_day0", "Discont_Day", "total_albumin",
   "albumin_before_terli", "totalalbumin_before_terli", "albvolume_before_terli",
   "hrs_responders", "hrs_responders_cat_2"
 )
