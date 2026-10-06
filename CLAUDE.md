@@ -26,7 +26,7 @@ HARMONY Terlipressin **Liver Transplant** sub-project — 1-year extended follow
 
 | # | Output | Stratifier | Rows |
 |:--|:--|:--|:--|
-| 1 | Demographics Table 1 | `efu_listingstatus` | 40 baseline / treatment variables incl. `map_day0_avg`, `total_albumin` |
+| 1 | Demographics Table 1 | `efu_listingstatus` | 40 baseline / treatment variables incl. `map_day0_avg`, `albumintotal_terli` |
 | 2 | EFU summary | `listed_transplant` | all 40 EFU fields |
 | 3 | EFU summary | `efu_listingstatus` | same minus stratifier |
 
@@ -37,7 +37,7 @@ Tables use the shared pipeline's `create_table_one()` — since 2026-09-15 it is
 - `map_terli_day0_time0..3` contain `0` placeholders; `map_day0_avg` recodes `0` → `NA` before averaging.
 - The day-1 MAP field exported as `map_terli_time1_day1` is renamed to `map_terli_day1_time1` by the shared pipeline (fixed 2026-10-06); day 1 is not used here, but note `map_terli_day1_time2` holds an implausible 427 mmHg.
 - `mean_map_day0` from the shared pipeline is fixed (S2) but still averages `0` placeholders (S3); this project uses `map_day0_avg` (`0 → NA` first).
-- `albumintotal_terli_dayN` = grams of albumin **given** on day N (→ `total_albumin`); `alb_terli_dayN` = **serum** albumin. The legacy `.Rmd`s confused the two.
+- `albumintotal_terli_dayN` = grams of albumin **given** on day N; this project sums days 0–13 into **`albumintotal_terli`** (the Table 1 row; identical to the shared pipeline's `total_albumin`, kept under the name matching the REDCap fields), with `albumintotal_terli_days` = number of days with a recorded value. `alb_terli_dayN` = **serum** albumin. The legacy `.Rmd`s confused the two.
 - One `efu_lttbili` value is a below-detection string; `parse_number()` keeps the limit value.
 - `total_albumin` counts a patient as 0 g when the grams field was never filled; `total_albumin_incomplete` (export script) flags the 1 patient where albumin was recorded as given but no grams entered.
 - The master xlsx stores `child_pugh_score` and `dosechange_day` values that disagree with what the shared pipeline recomputes (153 and 47 patients). The pipeline values are the ones used everywhere here — worth resolving upstream.
