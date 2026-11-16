@@ -141,17 +141,33 @@ master <- master %>%
         rowSums(!is.na(across(all_of(alb_g)))) == 0,
       1, 0
     ),
-    albumin_days_recorded = rowSums(!is.na(across(all_of(alb_g))))
+    albumin_days_recorded = rowSums(!is.na(across(all_of(alb_g)))),
+
+    # --- Variables defined in the 2026-11-16 request ---------------------
+    albumin_terli = if_else(total_albumin > 0, 1, 0),
+    icu_los       = as.numeric(days_to_icu_dc) - as.numeric(days_to_icu_admit),
+    icu_los       = if_else(icu_los < 0, NA_real_, icu_los)
   )
 
 project_names <- c("id_key", "map_day0_avg", "map_day0_n_readings",
                    "total_albumin_incomplete", "albumin_days_recorded",
+                   "albumin_terli", "rrt_any", "time_to_rrt", "efu_removed", "icu_los",
                    "efu_available", "in_analysis_cohort", "in_table1_cohort")
 
 # -- 5. Merge: keep all 243 master patients, flag who has EFU data -----------
 analysis_data <- master %>%
   left_join(efu_raw, by = "id_key") %>%
   mutate(
+    # Any post-discharge RRT at 90 d / 180 d / 1 yr (overall or post-transplant)
+    rrt_any = if_else(rowSums(across(all_of(c("efu_1yrlt_rrt", "efu_1yr_rrt",
+      "efu_180lt_rrt", "efu_180_rrt", "efu_90lt_rrt", "efu_90_rrt")),
+      ~ as.numeric(.x) == 1), na.rm = TRUE) > 0, 1, 0),
+    # Days from terlipressin initiation to RRT start (EFU field, post-join)
+    time_to_rrt = as.numeric(efu_daysrrtstart) - as.numeric(days_to_terli_initiation_day0),
+    # Listed at some point but not listed at last follow-up = waitlist removal
+    efu_removed = if_else(as.numeric(efu_listing) == 0 &
+                            as.numeric(efu_listingstatus) == 1, 1, 0, missing = 0),
+
     efu_available      = if_else(id_key %in% efu_raw$id_key, 1, 0),
     in_analysis_cohort = efu_available,                                  # Table 2
     in_table1_cohort   = if_else(efu_available == 1 &

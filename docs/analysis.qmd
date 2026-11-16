@@ -22,11 +22,12 @@ site-submitted files under
 
 | Table | Cohort | Column (stratifier) | Rows |
 |:--|:--|:--|:--|
-| 1 — Demographics | EFU patients | `efu_listingstatus` (listed for LT at any point) | Baseline demographics, prior complications, admission / day-0 labs & scores, treatment characteristics, HRS response |
-| 2 — EFU summary | EFU patients | `listed_transplant` (index-hospitalization listing, shared pipeline) | All EFU outcome fields |
-| 3 — EFU summary | EFU patients | `efu_listingstatus` | All EFU outcome fields except the stratifier |
-| 4a — Response factors | Listed for transplant (`efu_listingstatus == 1`) | `hrs_responders_cat_2` | Baseline / day-0 severity, RRT, EFU outcomes, ICU and discharge, adverse events |
-| 4b — Response factors | Received a transplant (`efu_lt == 1`) | `hrs_responders_cat_2` | Same rows, minus the constant `efu_lt` |
+| 1 — Demographics | EFU patients | `efu_listingstatus` | Demographics, comorbidities, prior complications, admission / day-0 labs & scores, treatment, HRS response, RRT |
+| 2 — EFU summary | EFU patients | `efu_listingstatus` | All EFU outcome fields |
+| 3 — HRS reversal | Listed (`efu_listingstatus == 1`) | none (unstratified) | Route, albumin use, HRS response and reversal |
+| 4a — Response factors | Listed (`efu_listingstatus == 1`) | `hrs_responders_cat_2` | Baseline / day-0 severity, RRT, EFU outcomes, ICU & discharge, adverse events |
+| 4b — Response factors | Transplanted (`efu_lt == 1`) | `hrs_responders_cat_2` | Same rows, minus the constant `efu_lt` |
+| S1 — EFU summary | EFU patients | `listed_transplant` | Superseded by Table 2; kept from the earlier request |
 
 # Data Handling Notes
 
@@ -176,8 +177,12 @@ t1_numeric <- c(
   "age", "admit_meld_3", "day0_meld_3", "baseline_scr_new", "baseline_scr",
   "tbili_admit", "inr_admit", "sodium_admit", "albumin_admit", "map_day0_avg",
   "aclf_grade", "clif_c_score", "Discont_Day", "total_albumin",
-  "totalalbumin_before_terli", "albvolume_before_terli"
+  "totalalbumin_before_terli", "albvolume_before_terli", "time_to_rrt"
 )
+
+# Post-discharge RRT fields that feed rrt_any
+rrt_any_cols <- c("efu_1yrlt_rrt", "efu_1yr_rrt", "efu_180lt_rrt",
+                  "efu_180_rrt", "efu_90lt_rrt", "efu_90_rrt")
 
 efu_cohort <- efu_cohort %>%
   mutate(
@@ -194,6 +199,27 @@ efu_cohort <- efu_cohort %>%
       na.rm = TRUE
     ),
     map_day0_avg = if_else(is.nan(map_day0_avg), NA_real_, map_day0_avg),
+    # --- Variables defined in the 2026-11-16 request ---------------------
+    # Any albumin given during terlipressin therapy.
+    albumin_terli = if_else(total_albumin > 0, 1, 0),
+
+    # Any RRT recorded at ANY post-discharge follow-up point (90 d, 180 d,
+    # 1 yr; overall or post-transplant). Blank follow-up fields count as "no".
+    rrt_any = if_else(
+      rowSums(across(all_of(rrt_any_cols), ~ as.numeric(.x) == 1), na.rm = TRUE) > 0, 1, 0),
+
+    # Days from terlipressin initiation (not admission) to RRT start.
+    time_to_rrt = as.numeric(efu_daysrrtstart) - as.numeric(days_to_terli_initiation_day0),
+
+    # Listed at some point but not listed at last follow-up = removed from the
+    # waitlist. Anything else (including missing) counts as not removed.
+    efu_removed = if_else(
+      as.numeric(efu_listing) == 0 & as.numeric(efu_listingstatus) == 1, 1, 0, missing = 0),
+
+    # ICU length of stay; one record discharges before admission, so drop it.
+    icu_los = as.numeric(days_to_icu_dc) - as.numeric(days_to_icu_admit),
+    icu_los = if_else(icu_los < 0, NA_real_, icu_los),
+
     across(all_of(t1_numeric), as.numeric)
   )
 
@@ -230,6 +256,7 @@ categorical are n (%) (chi-squared).
 #| code-summary: "Show Table 1 code"
 t1_all_vars <- c(
   "age", "sex_male", "race", "cirrhosis_etiology",
+  "htn_medical_hx", "dm_medical_hx", "ckd_medical_hx", "cad_medical_hx",
   "he_previous_comp", "ascites_previous_comp", "refascites_previous_comp",
   "sbp_previous_comp", "nonsbp_previous_comp", "phtn_bleed_previous_comp",
   "hcc_previous_comp", "tips_previous_comp", "aki_previous_90days",
@@ -241,7 +268,8 @@ t1_all_vars <- c(
   "criteria_1", "criteria_2", "criteria_3", "criteria_4",
   "terli_route_day0", "Discont_Day", "total_albumin",
   "albumin_before_terli", "totalalbumin_before_terli", "albvolume_before_terli",
-  "hrs_responders", "hrs_responders_cat_2"
+  "hrs_responders", "hrs_responders_cat_2",
+  "HRS_criteria_3", "rrt_any", "time_to_rrt"
 )
 t1_cat_vars <- setdiff(t1_all_vars, t1_numeric)
 
@@ -259,16 +287,17 @@ create_table_one(
 
 [📥 Download CSV — Table 1](tables/table1_demographics_efu_listingstatus.csv)
 
-# Table 2 — EFU Summary by `listed_transplant`
+# Table 2 — EFU Summary by `efu_listingstatus`
 
-Cohort: all EFU patients. `efu_days*` fields are days from **index admission**.
+Cohort: EFU patients with a non-missing `efu_listingstatus`. `efu_days*`
+fields are days from **index admission**; the stratifier itself is not a row.
 
 ```{r table2}
 #| code-summary: "Show Table 2 code"
 efu_vars <- c(
   "efu_readmit", "efu_daysreadmit", "efu_readmit_cirrhosiscomp", "efu_readmitaki",
   "efu_readmitscr", "efu_status", "efu_dayslastencounter", "efu_daysdod",
-  "efu_rrt", "efu_daysrrtstart", "efu_listingstatus", "efu_dayslisting",
+  "efu_rrt", "efu_daysrrtstart", "efu_dayslisting",
   "efu_listing", "efu_dayswlremoval", "efu_lt", "efu_dayslt", "efu_slkt",
   "efu_kal", "efu_dayskal", "efu_ltrrt", "efu_ltna", "efu_lttbili", "efu_ltscr",
   "efu_lt_albumin", "efu_lt_inr", "efu_90_scr", "efu_90_rrt", "efu_90_readmit",
@@ -281,35 +310,53 @@ efu_cat_vars <- intersect(efu_vars, efu_yesno)
 create_table_one(
   all_vars = efu_vars,
   cat_vars = efu_cat_vars,
-  data     = efu_cohort,
-  strata   = "listed_transplant",
-  output   = "tables/table2_efu_listed_transplant.csv",
-  caption  = "Table 2 - EFU outcomes by listed_transplant (0 = not listed during index hospitalization, 1 = listed)"
+  data     = t1_data,
+  strata   = "efu_listingstatus",
+  output   = "tables/table2_efu_efu_listingstatus.csv",
+  caption  = "Table 2 - EFU outcomes by efu_listingstatus (0 = never listed, 1 = listed at any point)"
 )
 ```
 
-[📥 Download CSV — Table 2](tables/table2_efu_listed_transplant.csv)
+[📥 Download CSV — Table 2](tables/table2_efu_efu_listingstatus.csv)
 
-# Table 3 — EFU Summary by `efu_listingstatus`
+# Table 3 — HRS Reversal
 
-Cohort: EFU patients with a non-missing `efu_listingstatus`. Same rows as
-Table 2 minus the stratifier.
+Cohort: patients listed for transplant at any point (`efu_listingstatus == 1`),
+**unstratified** — a single overall column, so there is no comparison and no
+p-value.
 
 ```{r table3}
 #| code-summary: "Show Table 3 code"
-t3_vars <- setdiff(efu_vars, "efu_listingstatus")
+# tableone with no `strata`; same print settings as create_table_one() so the
+# formatting matches the stratified tables.
+create_table_one_overall <- function(all_vars, data, output,
+                                     cat_vars = NULL, caption = NULL) {
+  all_vars <- intersect(all_vars, names(data))
+  numerical_vars <- if (is.null(cat_vars)) all_vars else setdiff(all_vars, cat_vars)
 
-create_table_one(
+  T1 <- tableone::CreateTableOne(vars = all_vars, data = data,
+                                 factorVars = cat_vars, includeNA = FALSE)
+  T1_print <- print(T1, showAllLevels = TRUE, nonnormal = numerical_vars,
+                    missing = TRUE, quote = FALSE, noSpaces = TRUE,
+                    printToggle = FALSE)
+  write.csv(T1_print, file = output, row.names = TRUE)
+  knitr::kable(T1_print, caption = caption)
+}
+
+t3_vars <- c("terli_route_day0", "albumin_terli", "total_albumin",
+             "hrs_responders", "hrs_responders_cat_2", "HRS_reversal_new")
+t3_cat  <- setdiff(t3_vars, "total_albumin")
+
+create_table_one_overall(
   all_vars = t3_vars,
-  cat_vars = intersect(t3_vars, efu_yesno),
-  data     = t1_data,
-  strata   = "efu_listingstatus",
-  output   = "tables/table3_efu_efu_listingstatus.csv",
-  caption  = "Table 3 - EFU outcomes by efu_listingstatus (0 = never listed, 1 = listed at any point)"
+  cat_vars = t3_cat,
+  data     = t1_data %>% filter(efu_listingstatus == 1),
+  output   = "tables/table3_hrs_reversal_listed.csv",
+  caption  = "Table 3 - HRS reversal and treatment characteristics, patients listed for transplant (unstratified)"
 )
 ```
 
-[📥 Download CSV — Table 3](tables/table3_efu_efu_listingstatus.csv)
+[📥 Download CSV — Table 3](tables/table3_hrs_reversal_listed.csv)
 
 # Table 4 — Factors Associated with Overall Response
 
@@ -318,14 +365,12 @@ complete + partial) in two cohorts: **4a** patients listed for transplant at
 any point (`efu_listingstatus == 1`) and **4b** patients who received a liver
 transplant (`efu_lt == 1`).
 
-Five requested rows are not stored under the names in the request; these are
-the fields they map to:
+Three requested rows are derived rather than stored; `rrt_any` and
+`time_to_rrt` use the definitions given in the 2026-11-16 request:
 
 | Requested | Used | Why |
 |:--|:--|:--|
-| `rrt_any` | `rrt_2` | the registry's any-RRT flag (0/1, 168/75) |
-| `time_to_rrt` | `days_to_rrt` | days from admission to RRT; non-missing for exactly the 75 patients with `rrt_2 == 1` |
-| `icu_los` | derived here | `days_to_icu_dc − days_to_icu_admit` (computable for 123 patients; one negative value set to `NA`) |
+| `icu_los` | derived | `days_to_icu_dc − days_to_icu_admit` (123 patients; one negative value set to `NA`) |
 | `map_terli_day0_time{0-3}` (avg) | `map_day0_avg` | the day-0 MAP average already used in Table 1 |
 | `discont_reason_terli_dayN` | `discont_reason_terli` | the shared pipeline's value taken at `Discont_Day` |
 
@@ -350,10 +395,7 @@ t4_data <- efu_cohort %>%
       as.numeric(baseline_scr_new_2),
       breaks = c(-Inf, 3, 5, Inf), right = FALSE,
       labels = c("<3", ">=3 to <5", ">=5")
-    ),
-    # ICU length of stay; one record discharges before admission, so drop it.
-    icu_los = as.numeric(days_to_icu_dc) - as.numeric(days_to_icu_admit),
-    icu_los = if_else(icu_los < 0, NA_real_, icu_los)
+    )
   )
 
 t4_numeric <- c(
@@ -361,7 +403,7 @@ t4_numeric <- c(
   "admit_meld", "admit_meld_na", "admit_meld_3", "admit_meld_3_raw",
   "aclf_grade", "clif_c_score", "clif_c_score_new",
   "bili_terli_day0", "inr_terli_day0", "na_terli_day0", "alb_terli_day0",
-  "map_day0_avg", "days_to_rrt",
+  "map_day0_avg", "time_to_rrt",
   "efu_dayslt", "efu_dayskal", "efu_daysreadmit", "efu_readmitscr",
   "efu_90_scr", "efu_90_readmit", "efu_90lt_scr",
   "efu_180_scr", "efu_180_readmit", "efu_180lt_scr",
@@ -370,7 +412,7 @@ t4_numeric <- c(
 )
 
 t4_categorical <- c(
-  "baseline_scr_new_2_cat", "sex_male", "rrt_2",
+  "baseline_scr_new_2_cat", "sex_male", "rrt_any",
   "efu_lt", "efu_slkt", "efu_kal", "efu_ltrrt",
   "efu_readmit", "efu_readmit_cirrhosiscomp", "efu_readmitaki",
   "efu_90_rrt", "efu_90lt_rrt", "efu_180_rrt", "efu_180lt_rrt",
@@ -423,6 +465,26 @@ create_table_one(
 ```
 
 [📥 Download CSV — Table 4b](tables/table4b_response_transplanted.csv)
+
+# Supplementary Table S1 — EFU Summary by `listed_transplant`
+
+Superseded by Table 2, which uses `efu_listingstatus` instead. Kept because it
+was produced for the earlier version of the request; `listed_transplant` is
+listing **during the index hospitalization**, a different definition.
+
+```{r tableS1}
+#| code-summary: "Show Supplementary Table S1 code"
+create_table_one(
+  all_vars = c(efu_vars, "efu_listingstatus"),
+  cat_vars = c(efu_cat_vars, "efu_listingstatus"),
+  data     = efu_cohort,
+  strata   = "listed_transplant",
+  output   = "tables/tableS1_efu_listed_transplant.csv",
+  caption  = "Supplementary Table S1 - EFU outcomes by listed_transplant (0 = not listed during index hospitalization, 1 = listed)"
+)
+```
+
+[📥 Download CSV — Supplementary Table S1](tables/tableS1_efu_listed_transplant.csv)
 
 # Session Info
 

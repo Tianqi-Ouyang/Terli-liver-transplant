@@ -24,13 +24,27 @@ HARMONY Terlipressin **Liver Transplant** sub-project — 1-year extended follow
 
 ## Analysis Scope (`docs/analysis.qmd`)
 
-| # | Output | Stratifier | Rows |
-|:--|:--|:--|:--|
-| 1 | Demographics Table 1 | `efu_listingstatus` | 40 baseline / treatment variables incl. `map_day0_avg`, `total_albumin` |
-| 2 | EFU summary | `listed_transplant` | all 40 EFU fields |
-| 3 | EFU summary | `efu_listingstatus` | same minus stratifier |
-| 4a | Factors associated with overall response | `hrs_responders_cat_2`, cohort `efu_listingstatus == 1` (n = 84) | 58 rows: baseline/day-0 severity, RRT, EFU outcomes, ICU & discharge, AEs |
-| 4b | Same | `hrs_responders_cat_2`, cohort `efu_lt == 1` (n = 63) | same rows minus the constant `efu_lt` |
+| # | Output | Cohort | Stratifier | Rows |
+|:--|:--|:--|:--|:--|
+| 1 | Demographics | EFU patients | `efu_listingstatus` | 47 rows incl. comorbidity history, `map_day0_avg`, `total_albumin`, `HRS_criteria_3`, `rrt_any`, `time_to_rrt` |
+| 2 | EFU summary | EFU patients | `efu_listingstatus` | all 38 EFU fields |
+| 3 | HRS reversal | `efu_listingstatus == 1` | none (unstratified) | route, `albumin_terli`, `total_albumin`, HRS response/reversal |
+| 4a | Response factors | `efu_listingstatus == 1` (n = 84) | `hrs_responders_cat_2` | 58 rows: severity, RRT, EFU outcomes, ICU/discharge, AEs |
+| 4b | Response factors | `efu_lt == 1` (n = 63) | `hrs_responders_cat_2` | same minus the constant `efu_lt` |
+| S1 | EFU summary | EFU patients | `listed_transplant` | superseded by Table 2; kept from the earlier request |
+
+Table 3 uses a local `create_table_one_overall()` (tableone with no `strata`) since the shared helper requires a stratifier.
+
+## Project-Derived Variables (2026-11-16 request)
+
+| Variable | Definition |
+|:--|:--|
+| `albumin_terli` | 1 if `total_albumin > 0`, else 0 (62 / 181) |
+| `rrt_any` | 1 if any of `efu_90_rrt`, `efu_90lt_rrt`, `efu_180_rrt`, `efu_180lt_rrt`, `efu_1yr_rrt`, `efu_1yrlt_rrt` = 1, else 0 (227 / 16). **Not the same as `rrt_2`** (any RRT incl. in-hospital, 168/75) — they agree for only 166/243 |
+| `time_to_rrt` | `efu_daysrrtstart − days_to_terli_initiation_day0` (days from terlipressin start; 42 patients, median 14) |
+| `efu_removed` | 1 if `efu_listing == 0` and `efu_listingstatus == 1` (waitlist removal; 17 patients). Created but not currently in any table |
+| `icu_los` | `days_to_icu_dc − days_to_icu_admit` (122 patients; one negative value set to `NA`) |
+| `map_day0_avg` | mean of `map_terli_day0_time0..3` after `0 → NA` |
 
 Tables use the shared pipeline's `create_table_one()` — since 2026-09-15 it is tableone-only (`CreateTableOne()` → CSV in `docs/tables/`, returns `knitr::kable()` of the same matrix; pass `caption =`). Bug S1 (table1 Overall-column p-values) is fixed upstream; see `notes/BUGS.md` (local only).
 
