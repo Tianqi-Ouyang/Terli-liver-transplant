@@ -25,6 +25,8 @@ site-submitted files under
 | 1 — Demographics | EFU patients | `efu_listingstatus` (listed for LT at any point) | Baseline demographics, prior complications, admission / day-0 labs & scores, treatment characteristics, HRS response |
 | 2 — EFU summary | EFU patients | `listed_transplant` (index-hospitalization listing, shared pipeline) | All EFU outcome fields |
 | 3 — EFU summary | EFU patients | `efu_listingstatus` | All EFU outcome fields except the stratifier |
+| 4a — Response factors | Listed for transplant (`efu_listingstatus == 1`) | `hrs_responders_cat_2` | Baseline / day-0 severity, RRT, EFU outcomes, ICU and discharge, adverse events |
+| 4b — Response factors | Received a transplant (`efu_lt == 1`) | `hrs_responders_cat_2` | Same rows, minus the constant `efu_lt` |
 
 # Data Handling Notes
 
@@ -308,6 +310,119 @@ create_table_one(
 ```
 
 [📥 Download CSV — Table 3](tables/table3_efu_efu_listingstatus.csv)
+
+# Table 4 — Factors Associated with Overall Response
+
+Stratified by `hrs_responders_cat_2` (0 = no response, 1 = overall response =
+complete + partial) in two cohorts: **4a** patients listed for transplant at
+any point (`efu_listingstatus == 1`) and **4b** patients who received a liver
+transplant (`efu_lt == 1`).
+
+Five requested rows are not stored under the names in the request; these are
+the fields they map to:
+
+| Requested | Used | Why |
+|:--|:--|:--|
+| `rrt_any` | `rrt_2` | the registry's any-RRT flag (0/1, 168/75) |
+| `time_to_rrt` | `days_to_rrt` | days from admission to RRT; non-missing for exactly the 75 patients with `rrt_2 == 1` |
+| `icu_los` | derived here | `days_to_icu_dc − days_to_icu_admit` (computable for 123 patients; one negative value set to `NA`) |
+| `map_terli_day0_time{0-3}` (avg) | `map_day0_avg` | the day-0 MAP average already used in Table 1 |
+| `discont_reason_terli_dayN` | `discont_reason_terli` | the shared pipeline's value taken at `Discont_Day` |
+
+::: {.callout-warning}
+## `baseline_scr_new_2` does not fit the <3 / ≥3–<5 / ≥5 cut
+
+`baseline_scr_new_2` is the **pre-admission baseline** creatinine (median 1.11,
+max 3.66 mg/dL), so the requested bands put 208 patients in `<3`, 8 in
+`≥3–<5` and **0 in `≥5`** — the top band is empty and the row is effectively
+binary. The table below uses the bands exactly as requested. Those thresholds
+fit a peak/presenting creatinine instead: `scr_terli_day0` splits 146 / 87 / 10
+and `peakhospit_scr` splits 92 / 111 / 38. Say which variable you intended and
+the row can be swapped.
+:::
+
+```{r table4-derived}
+#| code-summary: "Show Table 4 derived variables"
+t4_data <- efu_cohort %>%
+  mutate(
+    # Requested bands, applied to baseline_scr_new_2 exactly as specified.
+    baseline_scr_new_2_cat = cut(
+      as.numeric(baseline_scr_new_2),
+      breaks = c(-Inf, 3, 5, Inf), right = FALSE,
+      labels = c("<3", ">=3 to <5", ">=5")
+    ),
+    # ICU length of stay; one record discharges before admission, so drop it.
+    icu_los = as.numeric(days_to_icu_dc) - as.numeric(days_to_icu_admit),
+    icu_los = if_else(icu_los < 0, NA_real_, icu_los)
+  )
+
+t4_numeric <- c(
+  "day0_meld", "day0_meld_na", "day0_meld_3",
+  "admit_meld", "admit_meld_na", "admit_meld_3", "admit_meld_3_raw",
+  "aclf_grade", "clif_c_score", "clif_c_score_new",
+  "bili_terli_day0", "inr_terli_day0", "na_terli_day0", "alb_terli_day0",
+  "map_day0_avg", "days_to_rrt",
+  "efu_dayslt", "efu_dayskal", "efu_daysreadmit", "efu_readmitscr",
+  "efu_90_scr", "efu_90_readmit", "efu_90lt_scr",
+  "efu_180_scr", "efu_180_readmit", "efu_180lt_scr",
+  "efu_1yr_scr", "efu_1yr_readmit", "efu_1yrlt_scr",
+  "icu_los", "days_to_discharge"
+)
+
+t4_categorical <- c(
+  "baseline_scr_new_2_cat", "sex_male", "rrt_2",
+  "efu_lt", "efu_slkt", "efu_kal", "efu_ltrrt",
+  "efu_readmit", "efu_readmit_cirrhosiscomp", "efu_readmitaki",
+  "efu_90_rrt", "efu_90lt_rrt", "efu_180_rrt", "efu_180lt_rrt",
+  "efu_1yr_rrt", "efu_1yrlt_rrt",
+  "discont_reason_terli", "any_ae",
+  "terli_ae_abdpain", "terli_ae_nausea", "terli_ae_diarrhea",
+  "terli_ae_volover", "terli_ae_brady", "terli_7", "terli_8",
+  "terli_ae_respfail", "noso_infection"
+)
+
+t4_vars <- c(t4_numeric, t4_categorical)
+
+t4_data <- t4_data %>% mutate(across(all_of(t4_numeric), as.numeric))
+```
+
+## Table 4a — Listed for transplant (`efu_listingstatus == 1`)
+
+```{r table4a}
+#| code-summary: "Show Table 4a code"
+t4a_data <- t4_data %>% filter(efu_listingstatus == 1)
+
+create_table_one(
+  all_vars = t4_vars,
+  cat_vars = t4_categorical,
+  data     = t4a_data,
+  strata   = "hrs_responders_cat_2",
+  output   = "tables/table4a_response_listed.csv",
+  caption  = "Table 4a - Factors associated with overall response, patients listed for transplant (0 = no response, 1 = overall response)"
+)
+```
+
+[📥 Download CSV — Table 4a](tables/table4a_response_listed.csv)
+
+## Table 4b — Received a liver transplant (`efu_lt == 1`)
+
+`efu_lt` is constant in this cohort, so it is dropped from the rows.
+
+```{r table4b}
+#| code-summary: "Show Table 4b code"
+t4b_data <- t4_data %>% filter(efu_lt == 1)
+
+create_table_one(
+  all_vars = setdiff(t4_vars, "efu_lt"),
+  cat_vars = setdiff(t4_categorical, "efu_lt"),
+  data     = t4b_data,
+  strata   = "hrs_responders_cat_2",
+  output   = "tables/table4b_response_transplanted.csv",
+  caption  = "Table 4b - Factors associated with overall response, patients who received a liver transplant (0 = no response, 1 = overall response)"
+)
+```
+
+[📥 Download CSV — Table 4b](tables/table4b_response_transplanted.csv)
 
 # Session Info
 

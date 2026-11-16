@@ -29,6 +29,8 @@ HARMONY Terlipressin **Liver Transplant** sub-project — 1-year extended follow
 | 1 | Demographics Table 1 | `efu_listingstatus` | 40 baseline / treatment variables incl. `map_day0_avg`, `total_albumin` |
 | 2 | EFU summary | `listed_transplant` | all 40 EFU fields |
 | 3 | EFU summary | `efu_listingstatus` | same minus stratifier |
+| 4a | Factors associated with overall response | `hrs_responders_cat_2`, cohort `efu_listingstatus == 1` (n = 84) | 58 rows: baseline/day-0 severity, RRT, EFU outcomes, ICU & discharge, AEs |
+| 4b | Same | `hrs_responders_cat_2`, cohort `efu_lt == 1` (n = 63) | same rows minus the constant `efu_lt` |
 
 Tables use the shared pipeline's `create_table_one()` — since 2026-09-15 it is tableone-only (`CreateTableOne()` → CSV in `docs/tables/`, returns `knitr::kable()` of the same matrix; pass `caption =`). Bug S1 (table1 Overall-column p-values) is fixed upstream; see `notes/BUGS.md` (local only).
 
@@ -39,6 +41,8 @@ Tables use the shared pipeline's `create_table_one()` — since 2026-09-15 it is
 - `mean_map_day0` from the shared pipeline is fixed (S2) but still averages `0` placeholders (S3); this project uses `map_day0_avg` (`0 → NA` first).
 - `albumintotal_terli_dayN` = grams of albumin **given** on day N (→ `total_albumin`); `alb_terli_dayN` = **serum** albumin. The legacy `.Rmd`s confused the two.
 - One `efu_lttbili` value is a below-detection string; `parse_number()` keeps the limit value.
+- Table 4 row-name mapping: `rrt_any` → `rrt_2`, `time_to_rrt` → `days_to_rrt`, `icu_los` → derived as `days_to_icu_dc − days_to_icu_admit` (1 negative value set to NA), `discont_reason_terli_dayN` → `discont_reason_terli`, avg day-0 MAP → `map_day0_avg`.
+- `baseline_scr_new_2` is a **pre-admission baseline** creatinine (median 1.11, max 3.66), so the requested <3 / ≥3–<5 / ≥5 bands give 208 / 8 / **0** — the top band is empty. `scr_terli_day0` (146/87/10) or `peakhospit_scr` (92/111/38) fit those thresholds; confirm which was intended.
 - `total_albumin` counts a patient as 0 g when the grams field was never filled; `total_albumin_incomplete` (export script) flags the 1 patient where albumin was recorded as given but no grams entered.
 - The master xlsx stores `child_pugh_score` and `dosechange_day` values that disagree with what the shared pipeline recomputes (153 and 47 patients). The pipeline values are the ones used everywhere here — worth resolving upstream.
 
