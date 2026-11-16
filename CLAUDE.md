@@ -19,7 +19,7 @@ HARMONY Terlipressin **Liver Transplant** sub-project — 1-year extended follow
 ## Cohort & Join
 
 - EFU rows are joined to `master` on a **normalized study ID** (`id_key`: upper-case prefix + integer; `YAL` → `YALE`) because the EFU export formats Yale IDs as `YAL-00N` while the master uses `Yale-N`.
-- 222 EFU rows → **221** analyzable patients: one CCF row is not in the master; the 22 CSF master patients have no EFU file (`MCX` = Mayo + MCM).
+- **Analytic cohort = 220.** 222 EFU rows → 221 match a master patient (one CCF row does not) → 220 have a recorded `efu_listingstatus`, which Tables 1–4 require. The 22 CSF master patients have no EFU file (`MCX` = Mayo + MCM). Only Supplementary Table S1 uses all 221.
 - `listed_transplant` (index hospitalization, shared pipeline) and `efu_listingstatus` (any time ≤ 1 yr, EFU) are different stratifiers — see the cross-tab in `docs/analysis.qmd`.
 
 ## Analysis Scope (`docs/analysis.qmd`)
