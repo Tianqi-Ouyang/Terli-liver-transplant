@@ -183,7 +183,7 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="cohort">Cohort</h2>
 <ul>
 <li><strong>Master cohort</strong> — the locked <code>final_master_01282026.xlsx</code> (n = 243), loaded through the shared pipeline with every standard derived variable.</li>
-<li><strong>EFU cohort</strong> — master patients with an EFU record in the 13 site CSVs under <code>Extended Data Collection/Finalized Files/09SEP2026/</code> (222 rows; 221 join to the master — one CCF row is not a master patient, and the 22 CSF patients have no EFU file). All three tables use this cohort.</li>
+<li><strong>EFU cohort — n = 220.</strong> Master patients with an EFU record in the 13 site CSVs under <code>Extended Data Collection/Finalized Files/09SEP2026/</code> and a recorded <code>efu_listingstatus</code>. The files hold 222 rows; 221 join to the master (one CCF row is not a master patient) and 220 of those have a listing status. The 22 CSF patients have no EFU file.</li>
 </ul>
 </section>
 <section id="outputs" class="level2">
@@ -328,7 +328,7 @@ ul.task-list li input[type="checkbox"] {
 <pre class="mermaid mermaid-js">flowchart TD
     A[final_master_01282026.xlsx&lt;br/&gt;n = 243] --&gt; B[Source shared_pipeline.qmd]
     C[13 site EFU CSVs&lt;br/&gt;09SEP2026, 222 rows] --&gt; D[Normalize study IDs]
-    B --&gt; E[inner_join on id_key&lt;br/&gt;EFU cohort n = 221]
+    B --&gt; E[inner_join on id_key&lt;br/&gt;221 matched -&gt; 220 with efu_listingstatus]
     D --&gt; E
     E --&gt; F[map_day0_avg, numeric coercions]
     F --&gt; G[Table 1 — demographics&lt;br/&gt;by efu_listingstatus]

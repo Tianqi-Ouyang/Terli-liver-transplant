@@ -224,7 +224,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="scope" class="level1">
 <h1>Scope</h1>
-<p>Extended follow-up (EFU) of the HARMONY terlipressin cohort. The analytic cohort is every patient in the locked master dataset (<code>final_master_01282026.xlsx</code>, n = 243) who has an EFU record in the site-submitted files under <code>Extended Data Collection/Finalized Files/09SEP2026/</code> (13 site CSVs, 222 rows).</p>
+<p>Extended follow-up (EFU) of the HARMONY terlipressin cohort. The analytic cohort is <strong>n = 220</strong>: patients in the locked master dataset (<code>final_master_01282026.xlsx</code>, n = 243) who have an EFU record in the 13 site-submitted files under <code>Extended Data Collection/Finalized Files/09SEP2026/</code> and a recorded <code>efu_listingstatus</code>. The site files hold 222 rows; 221 match a master patient and 220 of those have a listing status (see <em>Join QC</em>).</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 25%">
@@ -300,7 +300,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="even">
 <td style="text-align: left;">Cohort size</td>
-<td style="text-align: left;">222 EFU rows → 221 analyzable patients: one CCF row has an ID that is not in the locked master; the 22 CSF master patients have no EFU file. The cohort n is computed, not hard-coded.</td>
+<td style="text-align: left;"><strong>220</strong>. The 13 site files hold 222 rows; one CCF row has an ID that is not in the locked master (→ 221) and one of those has no <code>efu_listingstatus</code> (→ 220). The 22 CSF master patients have no EFU file at all. Every n is computed, never hard-coded.</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Day-0 MAP</td>
@@ -316,7 +316,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="even">
 <td style="text-align: left;">Missing stratifier</td>
-<td style="text-align: left;">One patient has no <code>efu_listingstatus</code>; Tables 1 and 3 use n = 220, Table 2 uses n = 221.</td>
+<td style="text-align: left;">The patient with no <code>efu_listingstatus</code> is excluded from Tables 1–4 (n = 220, and 84 / 63 in the listed and transplanted cohorts). Only Supplementary Table S1, which strata on <code>listed_transplant</code>, uses all 221.</td>
 </tr>
 </tbody>
 </table>
