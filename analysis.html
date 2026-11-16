@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Tianqi Ouyang">
-<meta name="dcterms.date" content="2026-10-06">
+<meta name="dcterms.date" content="2026-11-16">
 
 <title>Liver Transplant — Analysis – Terlipressin — Liver Transplant</title>
 <style>
@@ -178,6 +178,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#table-1-demographics-by-efu_listingstatus" id="toc-table-1-demographics-by-efu_listingstatus" class="nav-link" data-scroll-target="#table-1-demographics-by-efu_listingstatus">Table 1 — Demographics by <code>efu_listingstatus</code></a></li>
   <li><a href="#table-2-efu-summary-by-listed_transplant" id="toc-table-2-efu-summary-by-listed_transplant" class="nav-link" data-scroll-target="#table-2-efu-summary-by-listed_transplant">Table 2 — EFU Summary by <code>listed_transplant</code></a></li>
   <li><a href="#table-3-efu-summary-by-efu_listingstatus" id="toc-table-3-efu-summary-by-efu_listingstatus" class="nav-link" data-scroll-target="#table-3-efu-summary-by-efu_listingstatus">Table 3 — EFU Summary by <code>efu_listingstatus</code></a></li>
+  <li><a href="#table-4-factors-associated-with-overall-response" id="toc-table-4-factors-associated-with-overall-response" class="nav-link" data-scroll-target="#table-4-factors-associated-with-overall-response">Table 4 — Factors Associated with Overall Response</a>
+  <ul class="collapse">
+  <li><a href="#table-4a-listed-for-transplant-efu_listingstatus-1" id="toc-table-4a-listed-for-transplant-efu_listingstatus-1" class="nav-link" data-scroll-target="#table-4a-listed-for-transplant-efu_listingstatus-1">Table 4a — Listed for transplant (<code>efu_listingstatus == 1</code>)</a></li>
+  <li><a href="#table-4b-received-a-liver-transplant-efu_lt-1" id="toc-table-4b-received-a-liver-transplant-efu_lt-1" class="nav-link" data-scroll-target="#table-4b-received-a-liver-transplant-efu_lt-1">Table 4b — Received a liver transplant (<code>efu_lt == 1</code>)</a></li>
+  </ul></li>
   <li><a href="#session-info" id="toc-session-info" class="nav-link" data-scroll-target="#session-info">Session Info</a></li>
   </ul>
 </nav>
@@ -204,7 +209,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">October 6, 2026</p>
+      <p class="date">November 16, 2026</p>
     </div>
   </div>
   
@@ -252,6 +257,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">EFU patients</td>
 <td style="text-align: left;"><code>efu_listingstatus</code></td>
 <td style="text-align: left;">All EFU outcome fields except the stratifier</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">4a — Response factors</td>
+<td style="text-align: left;">Listed for transplant (<code>efu_listingstatus == 1</code>)</td>
+<td style="text-align: left;"><code>hrs_responders_cat_2</code></td>
+<td style="text-align: left;">Baseline / day-0 severity, RRT, EFU outcomes, ICU and discharge, adverse events</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">4b — Response factors</td>
+<td style="text-align: left;">Received a transplant (<code>efu_lt == 1</code>)</td>
+<td style="text-align: left;"><code>hrs_responders_cat_2</code></td>
+<td style="text-align: left;">Same rows, minus the constant <code>efu_lt</code></td>
 </tr>
 </tbody>
 </table>
@@ -2671,12 +2688,1974 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p><a href="tables/table3_efu_efu_listingstatus.csv">📥 Download CSV — Table 3</a></p>
 </section>
+<section id="table-4-factors-associated-with-overall-response" class="level1">
+<h1>Table 4 — Factors Associated with Overall Response</h1>
+<p>Stratified by <code>hrs_responders_cat_2</code> (0 = no response, 1 = overall response = complete + partial) in two cohorts: <strong>4a</strong> patients listed for transplant at any point (<code>efu_listingstatus == 1</code>) and <strong>4b</strong> patients who received a liver transplant (<code>efu_lt == 1</code>).</p>
+<p>Five requested rows are not stored under the names in the request; these are the fields they map to:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Requested</th>
+<th style="text-align: left;">Used</th>
+<th style="text-align: left;">Why</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>rrt_any</code></td>
+<td style="text-align: left;"><code>rrt_2</code></td>
+<td style="text-align: left;">the registry’s any-RRT flag (0/1, 168/75)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>time_to_rrt</code></td>
+<td style="text-align: left;"><code>days_to_rrt</code></td>
+<td style="text-align: left;">days from admission to RRT; non-missing for exactly the 75 patients with <code>rrt_2 == 1</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>icu_los</code></td>
+<td style="text-align: left;">derived here</td>
+<td style="text-align: left;"><code>days_to_icu_dc − days_to_icu_admit</code> (computable for 123 patients; one negative value set to <code>NA</code>)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>map_terli_day0_time{0-3}</code> (avg)</td>
+<td style="text-align: left;"><code>map_day0_avg</code></td>
+<td style="text-align: left;">the day-0 MAP average already used in Table 1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>discont_reason_terli_dayN</code></td>
+<td style="text-align: left;"><code>discont_reason_terli</code></td>
+<td style="text-align: left;">the shared pipeline’s value taken at <code>Discont_Day</code></td>
+</tr>
+</tbody>
+</table>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span><code>baseline_scr_new_2</code> does not fit the &lt;3 / ≥3–&lt;5 / ≥5 cut
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><code>baseline_scr_new_2</code> is the <strong>pre-admission baseline</strong> creatinine (median 1.11, max 3.66 mg/dL), so the requested bands put 208 patients in <code>&lt;3</code>, 8 in <code>≥3–&lt;5</code> and <strong>0 in <code>≥5</code></strong> — the top band is empty and the row is effectively binary. The table below uses the bands exactly as requested. Those thresholds fit a peak/presenting creatinine instead: <code>scr_terli_day0</code> splits 146 / 87 / 10 and <code>peakhospit_scr</code> splits 92 / 111 / 38. Say which variable you intended and the row can be swapped.</p>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show Table 4 derived variables</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>t4_data <span class="ot">&lt;-</span> efu_cohort <span class="sc">%&gt;%</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Requested bands, applied to baseline_scr_new_2 exactly as specified.</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">baseline_scr_new_2_cat =</span> <span class="fu">cut</span>(</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">as.numeric</span>(baseline_scr_new_2),</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>      <span class="at">breaks =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="cn">Inf</span>, <span class="dv">3</span>, <span class="dv">5</span>, <span class="cn">Inf</span>), <span class="at">right =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"&lt;3"</span>, <span class="st">"&gt;=3 to &lt;5"</span>, <span class="st">"&gt;=5"</span>)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ICU length of stay; one record discharges before admission, so drop it.</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">icu_los =</span> <span class="fu">as.numeric</span>(days_to_icu_dc) <span class="sc">-</span> <span class="fu">as.numeric</span>(days_to_icu_admit),</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">icu_los =</span> <span class="fu">if_else</span>(icu_los <span class="sc">&lt;</span> <span class="dv">0</span>, <span class="cn">NA_real_</span>, icu_los)</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>t4_numeric <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>  <span class="st">"day0_meld"</span>, <span class="st">"day0_meld_na"</span>, <span class="st">"day0_meld_3"</span>,</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  <span class="st">"admit_meld"</span>, <span class="st">"admit_meld_na"</span>, <span class="st">"admit_meld_3"</span>, <span class="st">"admit_meld_3_raw"</span>,</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  <span class="st">"aclf_grade"</span>, <span class="st">"clif_c_score"</span>, <span class="st">"clif_c_score_new"</span>,</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>  <span class="st">"bili_terli_day0"</span>, <span class="st">"inr_terli_day0"</span>, <span class="st">"na_terli_day0"</span>, <span class="st">"alb_terli_day0"</span>,</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>  <span class="st">"map_day0_avg"</span>, <span class="st">"days_to_rrt"</span>,</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>  <span class="st">"efu_dayslt"</span>, <span class="st">"efu_dayskal"</span>, <span class="st">"efu_daysreadmit"</span>, <span class="st">"efu_readmitscr"</span>,</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>  <span class="st">"efu_90_scr"</span>, <span class="st">"efu_90_readmit"</span>, <span class="st">"efu_90lt_scr"</span>,</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  <span class="st">"efu_180_scr"</span>, <span class="st">"efu_180_readmit"</span>, <span class="st">"efu_180lt_scr"</span>,</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  <span class="st">"efu_1yr_scr"</span>, <span class="st">"efu_1yr_readmit"</span>, <span class="st">"efu_1yrlt_scr"</span>,</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>  <span class="st">"icu_los"</span>, <span class="st">"days_to_discharge"</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>t4_categorical <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>  <span class="st">"baseline_scr_new_2_cat"</span>, <span class="st">"sex_male"</span>, <span class="st">"rrt_2"</span>,</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>  <span class="st">"efu_lt"</span>, <span class="st">"efu_slkt"</span>, <span class="st">"efu_kal"</span>, <span class="st">"efu_ltrrt"</span>,</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>  <span class="st">"efu_readmit"</span>, <span class="st">"efu_readmit_cirrhosiscomp"</span>, <span class="st">"efu_readmitaki"</span>,</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>  <span class="st">"efu_90_rrt"</span>, <span class="st">"efu_90lt_rrt"</span>, <span class="st">"efu_180_rrt"</span>, <span class="st">"efu_180lt_rrt"</span>,</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>  <span class="st">"efu_1yr_rrt"</span>, <span class="st">"efu_1yrlt_rrt"</span>,</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>  <span class="st">"discont_reason_terli"</span>, <span class="st">"any_ae"</span>,</span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>  <span class="st">"terli_ae_abdpain"</span>, <span class="st">"terli_ae_nausea"</span>, <span class="st">"terli_ae_diarrhea"</span>,</span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>  <span class="st">"terli_ae_volover"</span>, <span class="st">"terli_ae_brady"</span>, <span class="st">"terli_7"</span>, <span class="st">"terli_8"</span>,</span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>  <span class="st">"terli_ae_respfail"</span>, <span class="st">"noso_infection"</span></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>t4_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(t4_numeric, t4_categorical)</span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>t4_data <span class="ot">&lt;-</span> t4_data <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">all_of</span>(t4_numeric), as.numeric))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<section id="table-4a-listed-for-transplant-efu_listingstatus-1" class="level2">
+<h2 class="anchored" data-anchor-id="table-4a-listed-for-transplant-efu_listingstatus-1">Table 4a — Listed for transplant (<code>efu_listingstatus == 1</code>)</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Show Table 4a code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>t4a_data <span class="ot">&lt;-</span> t4_data <span class="sc">%&gt;%</span> <span class="fu">filter</span>(efu_listingstatus <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">create_table_one</span>(</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">all_vars =</span> t4_vars,</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">cat_vars =</span> t4_categorical,</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">data     =</span> t4a_data,</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">strata   =</span> <span class="st">"hrs_responders_cat_2"</span>,</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">output   =</span> <span class="st">"tables/table4a_response_listed.csv"</span>,</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">caption  =</span> <span class="st">"Table 4a - Factors associated with overall response, patients listed for transplant (0 = no response, 1 = overall response)"</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Table 4a - Factors associated with overall response, patients listed for transplant (0 = no response, 1 = overall response)</caption>
+<colgroup>
+<col style="width: 24%">
+<col style="width: 7%">
+<col style="width: 17%">
+<col style="width: 17%">
+<col style="width: 17%">
+<col style="width: 4%">
+<col style="width: 5%">
+<col style="width: 5%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: left;">level</th>
+<th style="text-align: left;">Overall</th>
+<th style="text-align: left;">0</th>
+<th style="text-align: left;">1</th>
+<th style="text-align: left;">p</th>
+<th style="text-align: left;">test</th>
+<th style="text-align: left;">Missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">n</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">84</td>
+<td style="text-align: left;">38</td>
+<td style="text-align: left;">46</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">day0_meld (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">30.00 [25.00, 34.00]</td>
+<td style="text-align: left;">30.50 [26.00, 33.00]</td>
+<td style="text-align: left;">30.00 [24.50, 34.00]</td>
+<td style="text-align: left;">0.995</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">17.9</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">day0_meld_na (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">32.00 [27.00, 36.00]</td>
+<td style="text-align: left;">33.00 [28.25, 35.00]</td>
+<td style="text-align: left;">31.00 [27.00, 36.00]</td>
+<td style="text-align: left;">0.670</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">17.9</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">day0_meld_3 (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">34.00 [28.00, 39.00]</td>
+<td style="text-align: left;">35.00 [30.50, 37.75]</td>
+<td style="text-align: left;">33.00 [27.50, 39.00]</td>
+<td style="text-align: left;">0.544</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">17.9</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">admit_meld (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">26.00 [21.00, 31.00]</td>
+<td style="text-align: left;">27.00 [21.25, 31.00]</td>
+<td style="text-align: left;">25.50 [21.00, 32.25]</td>
+<td style="text-align: left;">0.877</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">4.8</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">admit_meld_na (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">30.00 [25.00, 33.00]</td>
+<td style="text-align: left;">30.00 [23.00, 32.50]</td>
+<td style="text-align: left;">29.00 [25.75, 33.25]</td>
+<td style="text-align: left;">0.863</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">6.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">admit_meld_3 (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">31.00 [26.00, 36.00]</td>
+<td style="text-align: left;">31.00 [23.25, 35.75]</td>
+<td style="text-align: left;">30.00 [27.00, 35.75]</td>
+<td style="text-align: left;">0.946</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">admit_meld_3_raw (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">30.00 [25.75, 36.00]</td>
+<td style="text-align: left;">31.00 [23.00, 36.25]</td>
+<td style="text-align: left;">30.00 [26.75, 36.00]</td>
+<td style="text-align: left;">0.904</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">4.8</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">aclf_grade (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">2.00 [1.75, 3.00]</td>
+<td style="text-align: left;">2.00 [1.25, 3.00]</td>
+<td style="text-align: left;">2.00 [2.00, 3.00]</td>
+<td style="text-align: left;">0.527</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">clif_c_score (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">40.54 [35.28, 46.76]</td>
+<td style="text-align: left;">40.54 [35.02, 45.45]</td>
+<td style="text-align: left;">40.52 [35.95, 47.86]</td>
+<td style="text-align: left;">0.769</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">3.6</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">clif_c_score_new (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">41.00 [35.65, 46.60]</td>
+<td style="text-align: left;">40.93 [35.08, 45.21]</td>
+<td style="text-align: left;">41.03 [36.06, 47.52]</td>
+<td style="text-align: left;">0.767</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">bili_terli_day0 (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">3.80 [2.48, 10.95]</td>
+<td style="text-align: left;">3.70 [2.00, 14.00]</td>
+<td style="text-align: left;">3.80 [2.65, 6.50]</td>
+<td style="text-align: left;">0.996</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">4.8</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">inr_terli_day0 (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1.90 [1.60, 2.50]</td>
+<td style="text-align: left;">1.81 [1.52, 2.40]</td>
+<td style="text-align: left;">2.10 [1.70, 2.50]</td>
+<td style="text-align: left;">0.369</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">15.5</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">na_terli_day0 (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">133.00 [128.00, 136.25]</td>
+<td style="text-align: left;">132.00 [127.00, 135.00]</td>
+<td style="text-align: left;">133.50 [129.00, 137.75]</td>
+<td style="text-align: left;">0.130</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">alb_terli_day0 (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">3.60 [3.10, 3.90]</td>
+<td style="text-align: left;">3.60 [3.10, 4.00]</td>
+<td style="text-align: left;">3.60 [3.38, 3.90]</td>
+<td style="text-align: left;">0.398</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">3.6</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">map_day0_avg (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">76.15 [70.98, 81.42]</td>
+<td style="text-align: left;">76.96 [71.40, 82.86]</td>
+<td style="text-align: left;">75.40 [70.65, 81.00]</td>
+<td style="text-align: left;">0.615</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">days_to_rrt (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">10.50 [4.25, 18.75]</td>
+<td style="text-align: left;">8.00 [4.00, 16.50]</td>
+<td style="text-align: left;">13.00 [9.00, 22.00]</td>
+<td style="text-align: left;">0.161</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">64.3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">efu_dayslt (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">28.50 [15.00, 70.75]</td>
+<td style="text-align: left;">32.00 [16.00, 68.00]</td>
+<td style="text-align: left;">25.00 [15.00, 58.50]</td>
+<td style="text-align: left;">0.619</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">26.2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_dayskal (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">37.50 [26.00, 366.25]</td>
+<td style="text-align: left;">250.00 [140.50, 359.50]</td>
+<td style="text-align: left;">35.50 [24.00, 272.75]</td>
+<td style="text-align: left;">0.317</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">90.5</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">efu_daysreadmit (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">43.00 [29.00, 84.00]</td>
+<td style="text-align: left;">50.50 [29.00, 93.50]</td>
+<td style="text-align: left;">42.00 [29.00, 71.50]</td>
+<td style="text-align: left;">0.226</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">36.9</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_readmitscr (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1.68 [1.34, 2.54]</td>
+<td style="text-align: left;">1.92 [1.40, 2.74]</td>
+<td style="text-align: left;">1.67 [1.20, 2.54]</td>
+<td style="text-align: left;">0.362</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">36.9</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">efu_90_scr (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1.54 [1.14, 2.21]</td>
+<td style="text-align: left;">1.61 [1.25, 2.21]</td>
+<td style="text-align: left;">1.40 [1.04, 2.16]</td>
+<td style="text-align: left;">0.375</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">21.4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_90_readmit (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1.00 [0.00, 1.75]</td>
+<td style="text-align: left;">0.50 [0.00, 1.00]</td>
+<td style="text-align: left;">1.00 [0.75, 2.00]</td>
+<td style="text-align: left;">0.061</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">16.7</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">efu_90lt_scr (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1.54 [1.18, 2.18]</td>
+<td style="text-align: left;">1.52 [1.25, 2.14]</td>
+<td style="text-align: left;">1.59 [1.16, 2.26]</td>
+<td style="text-align: left;">0.802</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">31.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_180_scr (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1.59 [1.09, 2.20]</td>
+<td style="text-align: left;">1.43 [1.10, 2.01]</td>
+<td style="text-align: left;">1.69 [1.10, 2.40]</td>
+<td style="text-align: left;">0.569</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">27.4</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">efu_180_readmit (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1.00 [0.00, 2.00]</td>
+<td style="text-align: left;">1.00 [0.00, 2.75]</td>
+<td style="text-align: left;">1.00 [0.00, 2.00]</td>
+<td style="text-align: left;">0.232</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">15.5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_180lt_scr (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1.50 [1.14, 2.09]</td>
+<td style="text-align: left;">1.55 [1.33, 2.07]</td>
+<td style="text-align: left;">1.36 [1.11, 2.32]</td>
+<td style="text-align: left;">0.603</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">35.7</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">efu_1yr_scr (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1.41 [1.13, 1.98]</td>
+<td style="text-align: left;">1.65 [1.18, 2.01]</td>
+<td style="text-align: left;">1.40 [1.08, 1.97]</td>
+<td style="text-align: left;">0.320</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">32.1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_1yr_readmit (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1.00 [0.00, 3.00]</td>
+<td style="text-align: left;">1.00 [0.00, 3.00]</td>
+<td style="text-align: left;">2.00 [0.00, 3.00]</td>
+<td style="text-align: left;">0.407</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">21.4</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">efu_1yrlt_scr (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1.43 [1.20, 1.93]</td>
+<td style="text-align: left;">1.40 [1.27, 1.90]</td>
+<td style="text-align: left;">1.45 [1.20, 2.00]</td>
+<td style="text-align: left;">0.783</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">40.5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">icu_los (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">9.50 [5.00, 19.25]</td>
+<td style="text-align: left;">9.50 [4.25, 17.00]</td>
+<td style="text-align: left;">10.50 [5.75, 23.00]</td>
+<td style="text-align: left;">0.570</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">52.4</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">days_to_discharge (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">23.50 [15.75, 39.00]</td>
+<td style="text-align: left;">29.00 [16.25, 44.00]</td>
+<td style="text-align: left;">22.00 [14.25, 35.75]</td>
+<td style="text-align: left;">0.241</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">baseline_scr_new_2_cat (%)</td>
+<td style="text-align: left;">&lt;3</td>
+<td style="text-align: left;">73 (96.1)</td>
+<td style="text-align: left;">33 (94.3)</td>
+<td style="text-align: left;">40 (97.6)</td>
+<td style="text-align: left;">0.889</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">9.5</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">&gt;=3 to &lt;5</td>
+<td style="text-align: left;">3 (3.9)</td>
+<td style="text-align: left;">2 (5.7)</td>
+<td style="text-align: left;">1 (2.4)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">sex_male (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">38 (45.2)</td>
+<td style="text-align: left;">18 (47.4)</td>
+<td style="text-align: left;">20 (43.5)</td>
+<td style="text-align: left;">0.892</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">46 (54.8)</td>
+<td style="text-align: left;">20 (52.6)</td>
+<td style="text-align: left;">26 (56.5)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">rrt_2 (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">54 (64.3)</td>
+<td style="text-align: left;">19 (50.0)</td>
+<td style="text-align: left;">35 (76.1)</td>
+<td style="text-align: left;">0.024</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">30 (35.7)</td>
+<td style="text-align: left;">19 (50.0)</td>
+<td style="text-align: left;">11 (23.9)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_lt (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">21 (25.3)</td>
+<td style="text-align: left;">10 (27.0)</td>
+<td style="text-align: left;">11 (23.9)</td>
+<td style="text-align: left;">0.944</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1.2</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">62 (74.7)</td>
+<td style="text-align: left;">27 (73.0)</td>
+<td style="text-align: left;">35 (76.1)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_slkt (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">49 (79.0)</td>
+<td style="text-align: left;">23 (85.2)</td>
+<td style="text-align: left;">26 (74.3)</td>
+<td style="text-align: left;">0.465</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">26.2</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">13 (21.0)</td>
+<td style="text-align: left;">4 (14.8)</td>
+<td style="text-align: left;">9 (25.7)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_kal (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">54 (87.1)</td>
+<td style="text-align: left;">25 (92.6)</td>
+<td style="text-align: left;">29 (82.9)</td>
+<td style="text-align: left;">0.452</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">26.2</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">8 (12.9)</td>
+<td style="text-align: left;">2 (7.4)</td>
+<td style="text-align: left;">6 (17.1)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_ltrrt (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">41 (66.1)</td>
+<td style="text-align: left;">16 (59.3)</td>
+<td style="text-align: left;">25 (71.4)</td>
+<td style="text-align: left;">0.463</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">26.2</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">21 (33.9)</td>
+<td style="text-align: left;">11 (40.7)</td>
+<td style="text-align: left;">10 (28.6)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_readmit (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">31 (36.9)</td>
+<td style="text-align: left;">16 (42.1)</td>
+<td style="text-align: left;">15 (32.6)</td>
+<td style="text-align: left;">0.502</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">53 (63.1)</td>
+<td style="text-align: left;">22 (57.9)</td>
+<td style="text-align: left;">31 (67.4)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_readmit_cirrhosiscomp (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">21 (39.6)</td>
+<td style="text-align: left;">11 (50.0)</td>
+<td style="text-align: left;">10 (32.3)</td>
+<td style="text-align: left;">0.310</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">36.9</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">32 (60.4)</td>
+<td style="text-align: left;">11 (50.0)</td>
+<td style="text-align: left;">21 (67.7)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_readmitaki (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">31 (58.5)</td>
+<td style="text-align: left;">14 (63.6)</td>
+<td style="text-align: left;">17 (54.8)</td>
+<td style="text-align: left;">0.721</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">36.9</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">22 (41.5)</td>
+<td style="text-align: left;">8 (36.4)</td>
+<td style="text-align: left;">14 (45.2)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_90_rrt (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">63 (88.7)</td>
+<td style="text-align: left;">26 (89.7)</td>
+<td style="text-align: left;">37 (88.1)</td>
+<td style="text-align: left;">1.000</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">15.5</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">8 (11.3)</td>
+<td style="text-align: left;">3 (10.3)</td>
+<td style="text-align: left;">5 (11.9)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_90lt_rrt (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">51 (87.9)</td>
+<td style="text-align: left;">22 (88.0)</td>
+<td style="text-align: left;">29 (87.9)</td>
+<td style="text-align: left;">1.000</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">31.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">7 (12.1)</td>
+<td style="text-align: left;">3 (12.0)</td>
+<td style="text-align: left;">4 (12.1)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_180_rrt (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">64 (92.8)</td>
+<td style="text-align: left;">26 (92.9)</td>
+<td style="text-align: left;">38 (92.7)</td>
+<td style="text-align: left;">1.000</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">17.9</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">5 (7.2)</td>
+<td style="text-align: left;">2 (7.1)</td>
+<td style="text-align: left;">3 (7.3)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_180lt_rrt (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">52 (91.2)</td>
+<td style="text-align: left;">23 (92.0)</td>
+<td style="text-align: left;">29 (90.6)</td>
+<td style="text-align: left;">1.000</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">32.1</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">5 (8.8)</td>
+<td style="text-align: left;">2 (8.0)</td>
+<td style="text-align: left;">3 (9.4)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_1yr_rrt (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">57 (91.9)</td>
+<td style="text-align: left;">25 (92.6)</td>
+<td style="text-align: left;">32 (91.4)</td>
+<td style="text-align: left;">1.000</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">26.2</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">5 (8.1)</td>
+<td style="text-align: left;">2 (7.4)</td>
+<td style="text-align: left;">3 (8.6)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_1yrlt_rrt (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">51 (94.4)</td>
+<td style="text-align: left;">23 (100.0)</td>
+<td style="text-align: left;">28 (90.3)</td>
+<td style="text-align: left;">0.350</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">35.7</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">3 (5.6)</td>
+<td style="text-align: left;">0 (0.0)</td>
+<td style="text-align: left;">3 (9.7)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">discont_reason_terli (%)</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">11 (13.9)</td>
+<td style="text-align: left;">7 (18.9)</td>
+<td style="text-align: left;">4 (9.5)</td>
+<td style="text-align: left;">0.002</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">6.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">17 (21.5)</td>
+<td style="text-align: left;">1 (2.7)</td>
+<td style="text-align: left;">16 (38.1)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">23 (29.1)</td>
+<td style="text-align: left;">16 (43.2)</td>
+<td style="text-align: left;">7 (16.7)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">6</td>
+<td style="text-align: left;">4 (5.1)</td>
+<td style="text-align: left;">1 (2.7)</td>
+<td style="text-align: left;">3 (7.1)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">7</td>
+<td style="text-align: left;">3 (3.8)</td>
+<td style="text-align: left;">2 (5.4)</td>
+<td style="text-align: left;">1 (2.4)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">9</td>
+<td style="text-align: left;">21 (26.6)</td>
+<td style="text-align: left;">10 (27.0)</td>
+<td style="text-align: left;">11 (26.2)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">any_ae (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">72 (85.7)</td>
+<td style="text-align: left;">30 (78.9)</td>
+<td style="text-align: left;">42 (91.3)</td>
+<td style="text-align: left;">0.194</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">12 (14.3)</td>
+<td style="text-align: left;">8 (21.1)</td>
+<td style="text-align: left;">4 (8.7)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">terli_ae_abdpain (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">81 (96.4)</td>
+<td style="text-align: left;">35 (92.1)</td>
+<td style="text-align: left;">46 (100.0)</td>
+<td style="text-align: left;">0.177</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">3 (3.6)</td>
+<td style="text-align: left;">3 (7.9)</td>
+<td style="text-align: left;">0 (0.0)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">terli_ae_nausea (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">82 (97.6)</td>
+<td style="text-align: left;">36 (94.7)</td>
+<td style="text-align: left;">46 (100.0)</td>
+<td style="text-align: left;">0.392</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">2 (2.4)</td>
+<td style="text-align: left;">2 (5.3)</td>
+<td style="text-align: left;">0 (0.0)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">terli_ae_diarrhea (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">82 (97.6)</td>
+<td style="text-align: left;">36 (94.7)</td>
+<td style="text-align: left;">46 (100.0)</td>
+<td style="text-align: left;">0.392</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">2 (2.4)</td>
+<td style="text-align: left;">2 (5.3)</td>
+<td style="text-align: left;">0 (0.0)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">terli_ae_volover (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">81 (96.4)</td>
+<td style="text-align: left;">37 (97.4)</td>
+<td style="text-align: left;">44 (95.7)</td>
+<td style="text-align: left;">1.000</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">3 (3.6)</td>
+<td style="text-align: left;">1 (2.6)</td>
+<td style="text-align: left;">2 (4.3)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">terli_ae_brady (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">82 (97.6)</td>
+<td style="text-align: left;">37 (97.4)</td>
+<td style="text-align: left;">45 (97.8)</td>
+<td style="text-align: left;">1.000</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">2 (2.4)</td>
+<td style="text-align: left;">1 (2.6)</td>
+<td style="text-align: left;">1 (2.2)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">terli_7 (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">81 (96.4)</td>
+<td style="text-align: left;">36 (94.7)</td>
+<td style="text-align: left;">45 (97.8)</td>
+<td style="text-align: left;">0.866</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">3 (3.6)</td>
+<td style="text-align: left;">2 (5.3)</td>
+<td style="text-align: left;">1 (2.2)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">terli_8 (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">84 (100.0)</td>
+<td style="text-align: left;">38 (100.0)</td>
+<td style="text-align: left;">46 (100.0)</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">terli_ae_respfail (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">78 (92.9)</td>
+<td style="text-align: left;">35 (92.1)</td>
+<td style="text-align: left;">43 (93.5)</td>
+<td style="text-align: left;">1.000</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">6 (7.1)</td>
+<td style="text-align: left;">3 (7.9)</td>
+<td style="text-align: left;">3 (6.5)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">noso_infection (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">75 (90.4)</td>
+<td style="text-align: left;">36 (94.7)</td>
+<td style="text-align: left;">39 (86.7)</td>
+<td style="text-align: left;">0.385</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1.2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">8 (9.6)</td>
+<td style="text-align: left;">2 (5.3)</td>
+<td style="text-align: left;">6 (13.3)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><a href="tables/table4a_response_listed.csv">📥 Download CSV — Table 4a</a></p>
+</section>
+<section id="table-4b-received-a-liver-transplant-efu_lt-1" class="level2">
+<h2 class="anchored" data-anchor-id="table-4b-received-a-liver-transplant-efu_lt-1">Table 4b — Received a liver transplant (<code>efu_lt == 1</code>)</h2>
+<p><code>efu_lt</code> is constant in this cohort, so it is dropped from the rows.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show Table 4b code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>t4b_data <span class="ot">&lt;-</span> t4_data <span class="sc">%&gt;%</span> <span class="fu">filter</span>(efu_lt <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="fu">create_table_one</span>(</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">all_vars =</span> <span class="fu">setdiff</span>(t4_vars, <span class="st">"efu_lt"</span>),</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">cat_vars =</span> <span class="fu">setdiff</span>(t4_categorical, <span class="st">"efu_lt"</span>),</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">data     =</span> t4b_data,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">strata   =</span> <span class="st">"hrs_responders_cat_2"</span>,</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">output   =</span> <span class="st">"tables/table4b_response_transplanted.csv"</span>,</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">caption  =</span> <span class="st">"Table 4b - Factors associated with overall response, patients who received a liver transplant (0 = no response, 1 = overall response)"</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Table 4b - Factors associated with overall response, patients who received a liver transplant (0 = no response, 1 = overall response)</caption>
+<colgroup>
+<col style="width: 24%">
+<col style="width: 7%">
+<col style="width: 17%">
+<col style="width: 17%">
+<col style="width: 17%">
+<col style="width: 4%">
+<col style="width: 5%">
+<col style="width: 5%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: left;">level</th>
+<th style="text-align: left;">Overall</th>
+<th style="text-align: left;">0</th>
+<th style="text-align: left;">1</th>
+<th style="text-align: left;">p</th>
+<th style="text-align: left;">test</th>
+<th style="text-align: left;">Missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">n</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">63</td>
+<td style="text-align: left;">27</td>
+<td style="text-align: left;">36</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">day0_meld (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">31.00 [26.00, 33.75]</td>
+<td style="text-align: left;">31.00 [26.00, 33.00]</td>
+<td style="text-align: left;">31.00 [26.50, 34.00]</td>
+<td style="text-align: left;">0.922</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">20.6</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">day0_meld_na (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">32.50 [27.00, 35.75]</td>
+<td style="text-align: left;">33.00 [27.50, 35.50]</td>
+<td style="text-align: left;">31.00 [27.00, 35.50]</td>
+<td style="text-align: left;">0.740</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">20.6</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">day0_meld_3 (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">34.50 [28.25, 39.00]</td>
+<td style="text-align: left;">36.00 [29.50, 38.00]</td>
+<td style="text-align: left;">33.00 [28.00, 39.00]</td>
+<td style="text-align: left;">0.612</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">20.6</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">admit_meld (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">27.00 [22.00, 31.00]</td>
+<td style="text-align: left;">27.00 [22.25, 31.00]</td>
+<td style="text-align: left;">26.50 [22.25, 31.00]</td>
+<td style="text-align: left;">0.958</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">4.8</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">admit_meld_na (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">30.00 [26.00, 33.00]</td>
+<td style="text-align: left;">30.00 [23.00, 33.50]</td>
+<td style="text-align: left;">30.00 [26.25, 33.00]</td>
+<td style="text-align: left;">0.670</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">4.8</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">admit_meld_3 (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">30.00 [27.50, 36.00]</td>
+<td style="text-align: left;">30.00 [23.50, 37.00]</td>
+<td style="text-align: left;">30.50 [28.00, 35.25]</td>
+<td style="text-align: left;">0.744</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">admit_meld_3_raw (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">30.00 [27.00, 36.25]</td>
+<td style="text-align: left;">30.00 [23.25, 37.00]</td>
+<td style="text-align: left;">30.00 [28.00, 35.75]</td>
+<td style="text-align: left;">0.742</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">4.8</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">aclf_grade (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">2.00 [1.50, 3.00]</td>
+<td style="text-align: left;">2.00 [1.00, 3.00]</td>
+<td style="text-align: left;">2.00 [2.00, 3.00]</td>
+<td style="text-align: left;">0.807</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">clif_c_score (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">40.93 [36.14, 46.32]</td>
+<td style="text-align: left;">40.93 [35.41, 45.21]</td>
+<td style="text-align: left;">40.89 [37.29, 46.47]</td>
+<td style="text-align: left;">0.732</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">4.8</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">clif_c_score_new (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">41.38 [36.19, 45.89]</td>
+<td style="text-align: left;">41.32 [35.55, 44.97]</td>
+<td style="text-align: left;">41.38 [37.56, 46.32]</td>
+<td style="text-align: left;">0.728</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">bili_terli_day0 (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">3.80 [2.45, 9.75]</td>
+<td style="text-align: left;">4.05 [1.88, 16.75]</td>
+<td style="text-align: left;">3.80 [2.80, 6.30]</td>
+<td style="text-align: left;">0.766</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">6.3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">inr_terli_day0 (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">2.08 [1.67, 2.50]</td>
+<td style="text-align: left;">1.90 [1.50, 2.47]</td>
+<td style="text-align: left;">2.20 [1.80, 2.50]</td>
+<td style="text-align: left;">0.301</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">17.5</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">na_terli_day0 (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">133.00 [129.00, 136.50]</td>
+<td style="text-align: left;">133.00 [129.50, 135.00]</td>
+<td style="text-align: left;">133.00 [128.75, 138.00]</td>
+<td style="text-align: left;">0.676</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">alb_terli_day0 (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">3.60 [3.10, 4.00]</td>
+<td style="text-align: left;">3.60 [3.10, 4.00]</td>
+<td style="text-align: left;">3.60 [3.32, 3.90]</td>
+<td style="text-align: left;">0.759</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">4.8</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">map_day0_avg (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">77.42 [70.85, 83.41]</td>
+<td style="text-align: left;">78.16 [72.37, 84.75]</td>
+<td style="text-align: left;">76.19 [70.42, 82.59]</td>
+<td style="text-align: left;">0.487</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">days_to_rrt (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">8.00 [4.00, 18.75]</td>
+<td style="text-align: left;">5.00 [4.00, 13.25]</td>
+<td style="text-align: left;">15.50 [6.75, 20.75]</td>
+<td style="text-align: left;">0.192</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">65.1</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">efu_dayslt (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">30.00 [15.00, 67.50]</td>
+<td style="text-align: left;">32.00 [16.00, 68.00]</td>
+<td style="text-align: left;">25.50 [15.00, 50.75]</td>
+<td style="text-align: left;">0.647</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_dayskal (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">44.00 [27.00, 349.00]</td>
+<td style="text-align: left;">250.00 [140.50, 359.50]</td>
+<td style="text-align: left;">44.00 [25.00, 327.50]</td>
+<td style="text-align: left;">0.380</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">85.7</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">efu_daysreadmit (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">47.00 [31.00, 89.00]</td>
+<td style="text-align: left;">54.00 [34.50, 104.00]</td>
+<td style="text-align: left;">44.00 [31.50, 77.75]</td>
+<td style="text-align: left;">0.194</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">28.6</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_readmitscr (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1.72 [1.35, 2.53]</td>
+<td style="text-align: left;">1.89 [1.41, 2.38]</td>
+<td style="text-align: left;">1.70 [1.20, 2.54]</td>
+<td style="text-align: left;">0.613</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">28.6</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">efu_90_scr (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1.57 [1.17, 2.21]</td>
+<td style="text-align: left;">1.61 [1.26, 2.20]</td>
+<td style="text-align: left;">1.46 [1.06, 2.17]</td>
+<td style="text-align: left;">0.407</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">6.3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_90_readmit (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1.00 [0.00, 1.25]</td>
+<td style="text-align: left;">1.00 [0.00, 1.00]</td>
+<td style="text-align: left;">1.00 [0.50, 2.00]</td>
+<td style="text-align: left;">0.127</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">4.8</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">efu_90lt_scr (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1.55 [1.19, 2.17]</td>
+<td style="text-align: left;">1.52 [1.25, 2.14]</td>
+<td style="text-align: left;">1.59 [1.17, 2.19]</td>
+<td style="text-align: left;">0.830</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">6.3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_180_scr (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1.57 [1.15, 2.15]</td>
+<td style="text-align: left;">1.37 [1.07, 1.84]</td>
+<td style="text-align: left;">1.72 [1.19, 2.40]</td>
+<td style="text-align: left;">0.226</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">11.1</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">efu_180_readmit (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1.00 [0.00, 2.00]</td>
+<td style="text-align: left;">1.00 [0.00, 3.00]</td>
+<td style="text-align: left;">2.00 [0.75, 2.00]</td>
+<td style="text-align: left;">0.267</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">3.2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_180lt_scr (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1.52 [1.16, 2.08]</td>
+<td style="text-align: left;">1.55 [1.33, 2.07]</td>
+<td style="text-align: left;">1.38 [1.11, 2.24]</td>
+<td style="text-align: left;">0.606</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">12.7</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">efu_1yr_scr (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1.50 [1.20, 1.98]</td>
+<td style="text-align: left;">1.65 [1.23, 1.95]</td>
+<td style="text-align: left;">1.49 [1.20, 2.00]</td>
+<td style="text-align: left;">0.570</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">15.9</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_1yr_readmit (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1.50 [0.00, 3.00]</td>
+<td style="text-align: left;">1.00 [0.00, 3.00]</td>
+<td style="text-align: left;">2.00 [0.00, 4.50]</td>
+<td style="text-align: left;">0.369</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">7.9</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">efu_1yrlt_scr (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1.45 [1.21, 1.92]</td>
+<td style="text-align: left;">1.40 [1.27, 1.90]</td>
+<td style="text-align: left;">1.46 [1.20, 1.97]</td>
+<td style="text-align: left;">0.796</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">19.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">icu_los (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">7.00 [4.00, 16.00]</td>
+<td style="text-align: left;">9.00 [3.50, 13.50]</td>
+<td style="text-align: left;">6.50 [4.25, 17.25]</td>
+<td style="text-align: left;">0.869</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">60.3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">days_to_discharge (median [IQR])</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">26.00 [16.50, 44.50]</td>
+<td style="text-align: left;">35.00 [17.50, 47.50]</td>
+<td style="text-align: left;">23.50 [15.50, 38.25]</td>
+<td style="text-align: left;">0.246</td>
+<td style="text-align: left;">nonnorm</td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">baseline_scr_new_2_cat (%)</td>
+<td style="text-align: left;">&lt;3</td>
+<td style="text-align: left;">55 (94.8)</td>
+<td style="text-align: left;">22 (91.7)</td>
+<td style="text-align: left;">33 (97.1)</td>
+<td style="text-align: left;">0.756</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">7.9</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">&gt;=3 to &lt;5</td>
+<td style="text-align: left;">3 (5.2)</td>
+<td style="text-align: left;">2 (8.3)</td>
+<td style="text-align: left;">1 (2.9)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">sex_male (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">29 (46.0)</td>
+<td style="text-align: left;">13 (48.1)</td>
+<td style="text-align: left;">16 (44.4)</td>
+<td style="text-align: left;">0.971</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">34 (54.0)</td>
+<td style="text-align: left;">14 (51.9)</td>
+<td style="text-align: left;">20 (55.6)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">rrt_2 (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">41 (65.1)</td>
+<td style="text-align: left;">13 (48.1)</td>
+<td style="text-align: left;">28 (77.8)</td>
+<td style="text-align: left;">0.030</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">22 (34.9)</td>
+<td style="text-align: left;">14 (51.9)</td>
+<td style="text-align: left;">8 (22.2)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_slkt (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">50 (79.4)</td>
+<td style="text-align: left;">23 (85.2)</td>
+<td style="text-align: left;">27 (75.0)</td>
+<td style="text-align: left;">0.500</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">13 (20.6)</td>
+<td style="text-align: left;">4 (14.8)</td>
+<td style="text-align: left;">9 (25.0)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_kal (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">54 (85.7)</td>
+<td style="text-align: left;">25 (92.6)</td>
+<td style="text-align: left;">29 (80.6)</td>
+<td style="text-align: left;">0.323</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">9 (14.3)</td>
+<td style="text-align: left;">2 (7.4)</td>
+<td style="text-align: left;">7 (19.4)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_ltrrt (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">41 (65.1)</td>
+<td style="text-align: left;">16 (59.3)</td>
+<td style="text-align: left;">25 (69.4)</td>
+<td style="text-align: left;">0.567</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">22 (34.9)</td>
+<td style="text-align: left;">11 (40.7)</td>
+<td style="text-align: left;">11 (30.6)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_readmit (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">18 (28.6)</td>
+<td style="text-align: left;">8 (29.6)</td>
+<td style="text-align: left;">10 (27.8)</td>
+<td style="text-align: left;">1.000</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">45 (71.4)</td>
+<td style="text-align: left;">19 (70.4)</td>
+<td style="text-align: left;">26 (72.2)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_readmit_cirrhosiscomp (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">19 (42.2)</td>
+<td style="text-align: left;">10 (52.6)</td>
+<td style="text-align: left;">9 (34.6)</td>
+<td style="text-align: left;">0.367</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">28.6</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">26 (57.8)</td>
+<td style="text-align: left;">9 (47.4)</td>
+<td style="text-align: left;">17 (65.4)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_readmitaki (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">26 (57.8)</td>
+<td style="text-align: left;">12 (63.2)</td>
+<td style="text-align: left;">14 (53.8)</td>
+<td style="text-align: left;">0.750</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">28.6</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">19 (42.2)</td>
+<td style="text-align: left;">7 (36.8)</td>
+<td style="text-align: left;">12 (46.2)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_90_rrt (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">53 (88.3)</td>
+<td style="text-align: left;">23 (92.0)</td>
+<td style="text-align: left;">30 (85.7)</td>
+<td style="text-align: left;">0.734</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">4.8</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">7 (11.7)</td>
+<td style="text-align: left;">2 (8.0)</td>
+<td style="text-align: left;">5 (14.3)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_90lt_rrt (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">51 (87.9)</td>
+<td style="text-align: left;">22 (88.0)</td>
+<td style="text-align: left;">29 (87.9)</td>
+<td style="text-align: left;">1.000</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">7.9</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">7 (12.1)</td>
+<td style="text-align: left;">3 (12.0)</td>
+<td style="text-align: left;">4 (12.1)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_180_rrt (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">55 (93.2)</td>
+<td style="text-align: left;">23 (95.8)</td>
+<td style="text-align: left;">32 (91.4)</td>
+<td style="text-align: left;">0.893</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">6.3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">4 (6.8)</td>
+<td style="text-align: left;">1 (4.2)</td>
+<td style="text-align: left;">3 (8.6)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_180lt_rrt (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">52 (91.2)</td>
+<td style="text-align: left;">23 (92.0)</td>
+<td style="text-align: left;">29 (90.6)</td>
+<td style="text-align: left;">1.000</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">9.5</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">5 (8.8)</td>
+<td style="text-align: left;">2 (8.0)</td>
+<td style="text-align: left;">3 (9.4)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_1yr_rrt (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">50 (92.6)</td>
+<td style="text-align: left;">22 (95.7)</td>
+<td style="text-align: left;">28 (90.3)</td>
+<td style="text-align: left;">0.831</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">14.3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">4 (7.4)</td>
+<td style="text-align: left;">1 (4.3)</td>
+<td style="text-align: left;">3 (9.7)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">efu_1yrlt_rrt (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">52 (94.5)</td>
+<td style="text-align: left;">23 (100.0)</td>
+<td style="text-align: left;">29 (90.6)</td>
+<td style="text-align: left;">0.364</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">12.7</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">3 (5.5)</td>
+<td style="text-align: left;">0 (0.0)</td>
+<td style="text-align: left;">3 (9.4)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">discont_reason_terli (%)</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">7 (11.7)</td>
+<td style="text-align: left;">4 (15.4)</td>
+<td style="text-align: left;">3 (8.8)</td>
+<td style="text-align: left;">0.009</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">4.8</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">13 (21.7)</td>
+<td style="text-align: left;">1 (3.8)</td>
+<td style="text-align: left;">12 (35.3)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">17 (28.3)</td>
+<td style="text-align: left;">12 (46.2)</td>
+<td style="text-align: left;">5 (14.7)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">6</td>
+<td style="text-align: left;">3 (5.0)</td>
+<td style="text-align: left;">0 (0.0)</td>
+<td style="text-align: left;">3 (8.8)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">7</td>
+<td style="text-align: left;">3 (5.0)</td>
+<td style="text-align: left;">2 (7.7)</td>
+<td style="text-align: left;">1 (2.9)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">9</td>
+<td style="text-align: left;">17 (28.3)</td>
+<td style="text-align: left;">7 (26.9)</td>
+<td style="text-align: left;">10 (29.4)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">any_ae (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">55 (87.3)</td>
+<td style="text-align: left;">22 (81.5)</td>
+<td style="text-align: left;">33 (91.7)</td>
+<td style="text-align: left;">0.413</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">8 (12.7)</td>
+<td style="text-align: left;">5 (18.5)</td>
+<td style="text-align: left;">3 (8.3)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">terli_ae_abdpain (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">60 (95.2)</td>
+<td style="text-align: left;">24 (88.9)</td>
+<td style="text-align: left;">36 (100.0)</td>
+<td style="text-align: left;">0.147</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">3 (4.8)</td>
+<td style="text-align: left;">3 (11.1)</td>
+<td style="text-align: left;">0 (0.0)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">terli_ae_nausea (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">62 (98.4)</td>
+<td style="text-align: left;">26 (96.3)</td>
+<td style="text-align: left;">36 (100.0)</td>
+<td style="text-align: left;">0.884</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1 (1.6)</td>
+<td style="text-align: left;">1 (3.7)</td>
+<td style="text-align: left;">0 (0.0)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">terli_ae_diarrhea (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">62 (98.4)</td>
+<td style="text-align: left;">26 (96.3)</td>
+<td style="text-align: left;">36 (100.0)</td>
+<td style="text-align: left;">0.884</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1 (1.6)</td>
+<td style="text-align: left;">1 (3.7)</td>
+<td style="text-align: left;">0 (0.0)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">terli_ae_volover (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">62 (98.4)</td>
+<td style="text-align: left;">27 (100.0)</td>
+<td style="text-align: left;">35 (97.2)</td>
+<td style="text-align: left;">1.000</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1 (1.6)</td>
+<td style="text-align: left;">0 (0.0)</td>
+<td style="text-align: left;">1 (2.8)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">terli_ae_brady (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">62 (98.4)</td>
+<td style="text-align: left;">27 (100.0)</td>
+<td style="text-align: left;">35 (97.2)</td>
+<td style="text-align: left;">1.000</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1 (1.6)</td>
+<td style="text-align: left;">0 (0.0)</td>
+<td style="text-align: left;">1 (2.8)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">terli_7 (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">60 (95.2)</td>
+<td style="text-align: left;">25 (92.6)</td>
+<td style="text-align: left;">35 (97.2)</td>
+<td style="text-align: left;">0.798</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">3 (4.8)</td>
+<td style="text-align: left;">2 (7.4)</td>
+<td style="text-align: left;">1 (2.8)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">terli_8 (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">63 (100.0)</td>
+<td style="text-align: left;">27 (100.0)</td>
+<td style="text-align: left;">36 (100.0)</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">terli_ae_respfail (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">59 (93.7)</td>
+<td style="text-align: left;">25 (92.6)</td>
+<td style="text-align: left;">34 (94.4)</td>
+<td style="text-align: left;">1.000</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">4 (6.3)</td>
+<td style="text-align: left;">2 (7.4)</td>
+<td style="text-align: left;">2 (5.6)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">noso_infection (%)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">58 (93.5)</td>
+<td style="text-align: left;">27 (100.0)</td>
+<td style="text-align: left;">31 (88.6)</td>
+<td style="text-align: left;">0.195</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1.6</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">4 (6.5)</td>
+<td style="text-align: left;">0 (0.0)</td>
+<td style="text-align: left;">4 (11.4)</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><a href="tables/table4b_response_transplanted.csv">📥 Download CSV — Table 4b</a></p>
+</section>
+</section>
 <section id="session-info" class="level1">
 <h1>Session Info</h1>
 <div class="cell">
 <details class="code-fold">
 <summary>Show session info</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>R version 4.4.2 (2024-10-31)
