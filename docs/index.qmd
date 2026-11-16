@@ -15,11 +15,19 @@ The **Liver Transplant** sub-project of the [HARMONY Terlipressin Registry](../.
 
 ## Outputs
 
-| # | Output | Cohort | Stratifier | Rows |
-|:--|:-----|:-------|:-----------|:-----|
-| 1 | Demographics Table 1 | EFU cohort | `efu_listingstatus` | age, sex, race, etiology, prior complications, prior AKI, midodrine / octreotide, pressors, MELD 3.0 (admission, day 0), baseline / admission labs, `map_day0_avg`, ACLF grade, CLIF-C, ICU, extended criteria 1–4, terlipressin route, duration, albumin before / during therapy, HRS response |
-| 2 | EFU summary | EFU cohort | `listed_transplant` (index hospitalization) | all 40 EFU outcome fields |
-| 3 | EFU summary | EFU cohort | `efu_listingstatus` (any time ≤ 1 yr) | same, minus the stratifier |
+| # | Table | Cohort | n | Stratifier | Rows | CSV |
+|:--|:--|:--|--:|:--|--:|:--|
+| 1 | Demographics | EFU patients with `efu_listingstatus` | 220 | `efu_listingstatus` | 47 | `tables/table1_demographics_efu_listingstatus.csv` |
+| 2 | EFU summary | same | 220 | `efu_listingstatus` | 39 | `tables/table2_efu_efu_listingstatus.csv` |
+| 3 | HRS reversal | listed (`efu_listingstatus == 1`) | 84 | none (unstratified) | 6 | `tables/table3_hrs_reversal_listed.csv` |
+| 4a | Factors associated with overall response | listed (`efu_listingstatus == 1`) | 84 | `hrs_responders_cat_2` | 58 | `tables/table4a_response_listed.csv` |
+| 4b | Factors associated with overall response | transplanted (`efu_lt == 1`) | 63 | `hrs_responders_cat_2` | 57 | `tables/table4b_response_transplanted.csv` |
+| S1 | EFU summary (superseded by Table 2) | all EFU patients | 221 | `listed_transplant` | 39 | `tables/tableS1_efu_listed_transplant.csv` |
+
+All tables are built with `tableone::CreateTableOne()`; the table shown on the
+page is the same matrix written to the CSV. Continuous rows are median [IQR]
+(Kruskal-Wallis / Mann-Whitney); categorical rows are n (%) (chi-squared).
+Table 3 is unstratified, so it has no p-value column.
 
 Plus a join-QC table and a cross-tabulation of the two listing definitions.
 
@@ -29,6 +37,11 @@ Plus a join-QC table and a cross-tabulation of the two listing definitions.
 |:---------|:-----------|
 | `id_key` | Normalized study ID (`UPPERCASE-PREFIX-integer`, `YAL` → `YALE`) used to join EFU files to the master |
 | `map_day0_avg` | Mean of `map_terli_day0_time0`–`time3` after recoding `0` (not measured) to `NA` |
+| `albumin_terli` | 1 if `total_albumin > 0`, else 0 |
+| `rrt_any` | 1 if any of `efu_90_rrt`, `efu_90lt_rrt`, `efu_180_rrt`, `efu_180lt_rrt`, `efu_1yr_rrt`, `efu_1yrlt_rrt` = 1, else 0 |
+| `time_to_rrt` | `efu_daysrrtstart − days_to_terli_initiation_day0` (days from terlipressin initiation) |
+| `efu_removed` | 1 if `efu_listing == 0` and `efu_listingstatus == 1` (waitlist removal), else 0 |
+| `icu_los` | `days_to_icu_dc − days_to_icu_admit` (one negative value set to `NA`) |
 | `efu_*` | EFU form fields (see *EFU Variables*); yes/no as 0/1, labs parsed with `parse_number()` |
 
 ## Pipeline
